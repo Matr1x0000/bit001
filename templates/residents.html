@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}社区社区居民信息系社区- - 居民系统{% endblock %}
+
+{% block page_title %}居民信息管理{% endblock %}
+
+{% block content %}
+<!-- 居民信息管理 -->
+<section id="residents" class="page-section">
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <form method="GET" action="" class="mb-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+          <div class="relative">
+            <input type="text" placeholder="搜索居民..." name="search_query"
+              value="{{ search_query|default:'' }}"
+              class="w-full sm:w-64 pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <i class="fa fa-search"></i>
+            </div>
+          </div>
+
+          <button type="submit"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent flex items-center justify-center text-sm">
+            <i class="fa fa-search mr-2"></i> 搜索
+          </button>
+          
+          <button id="add-resident-btn"
+            type="button"
+            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center text-sm">
+            <i class="fa fa-plus mr-2"></i> 添加居民
+          </button>
+        </div>
+      </div>
+
+    <!-- 筛选器 -->
+    <div class="flex flex-wrap items-center mb-6 pb-4 border-b bg-white p-4 rounded-lg shadow-sm">
+      <div class="flex flex-wrap items-end space-x-4 mb-4 sm:mb-0">
+        <div class="min-w-[150px]">
+          <label class="block text-sm font-medium text-gray-700 mb-1">年龄段</label>
+          <select name="age_group"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+            <option value="" {% if not age_group %}selected{% endif %}>全部</option>
+            {% for group in age_group_choices %}
+            <option value="{{ group.0 }}" {% if age_group == group.0 %}selected{% endif %}>{{ group.1 }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="min-w-[150px]">
+          <label class="block text-sm font-medium text-gray-700 mb-1">政治面貌</label>
+          <select name="political_status"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+            <option value="" {% if not political_status %}selected{% endif %}>全部</option>
+            {% for status in political_status_choices %}
+            <option value="{{ status.0 }}" {% if political_status == status.0|stringformat:"s" %}selected{% endif %}>{{ status.1 }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="min-w-[150px]">
+          <label class="block text-sm font-medium text-gray-700 mb-1">学历</label>
+          <select name="education"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+            <option value="" {% if not education %}selected{% endif %}>全部</option>
+            {% for edu in education_choices %}
+            <option value="{{ edu.0 }}" {% if education == edu.0|stringformat:"s" %}selected{% endif %}>{{ edu.1 }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="min-w-[150px]">
+          <label class="block text-sm font-medium text-gray-700 mb-1">民族</label>
+          <select name="nationality"
+            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+            <option value="" {% if not nationality %}selected{% endif %}>全部</option>
+            {% for nation in nationality_choices %}
+            <option value="{{ nation.0 }}" {% if nationality == nation.0|stringformat:"s" %}selected{% endif %}>{{ nation.1 }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button type="submit"
+            class="bg-primary text-white hover:bg-blue-700 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent flex items-center justify-center text-sm">
+            <i class="fa fa-filter mr-2"></i> 筛选
+          </button>
+          <button type="button"
+            onclick="window.location.href='{{ request.path }}?page=1&page_size={{ page_size|default:10 }}'"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent flex items-center justify-center text-sm">
+            <i class="fa fa-refresh mr-2"></i> 重置
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 隐藏字段，保存当前分页设置 -->
+    <input type="hidden" name="page" value="1">
+    <input type="hidden" name="page_size" value="{{ page_size }}">
+    
+    </form>
+
+    <!-- 居民列表 -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead>
+          <tr>
+            <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">姓名</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">性别</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">民族</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">身份证号</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">联系电话</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">家庭</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">政治面貌</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">婚姻状态</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">学历</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">是否有工作</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">是否死亡</th>
+            <th class="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">操作</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for resident in residents %}
+          <tr>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <div>
+                <p class="text-sm font-medium text-gray-900">{{ resident.name }}</p>
+              </div>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ resident.get_gender_display }}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ resident.get_nationality_display }}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ resident.id_card }}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ resident.phone|default:"-" }}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ resident.family.household_number|default:"-" }}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ resident.get_political_status_display|default:"-" }}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ resident.get_marital_status_display|default:"-" }}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ resident.get_education_display|default:"-" }}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ resident.job|yesno:"是,否" }}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">{{ resident.is_dead|yesno:"是,否" }}</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+              <a href="/edit-resident/{{ resident.id }}/" class="text-gray-600 hover:text-gray-900 mr-3">编辑</a>
+              <a href="/delete-resident/{{ resident.id }}/" onclick="return confirm('确定要删除该居民吗？此操作不可恢复。')" class="text-red-600 hover:text-red-900">删除</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="12" class="px-4 py-6 text-center text-sm text-gray-500">
+              未找到符合条件的居民数据
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+
+    <!-- 分页 -->
+    <div class="flex flex-col sm:flex-row items-center justify-between mt-6">
+      <div class="text-sm text-gray-500 mb-4 sm:mb-0">
+        显示 <span class="font-medium">{{ page_obj.start_index }}</span> 到 <span class="font-medium">{{ page_obj.end_index }}</span> 条，共 <span class="font-medium">{{ total_residents }}</span> 条记录
+      </div>
+      <div class="flex items-center space-x-2">
+        <!-- 每页显示条数选择 -->
+        <div class="mr-4 flex items-center">
+          <span class="text-sm text-gray-500 mr-2">每页显示：</span>
+          <select id="page_size" onchange="changePageSize()"
+            class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="5" {% if page_size == '5' %}selected{% endif %}>5</option>
+            <option value="10" {% if page_size == '10' %}selected{% endif %}>10</option>
+            <option value="20" {% if page_size == '20' %}selected{% endif %}>20</option>
+            <option value="50" {% if page_size == '50' %}selected{% endif %}>50</option>
+          </select>
+        </div>
+        
+        <!-- 页码导航 -->
+        <div class="flex items-center space-x-1">
+          {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}{% if political_status %}&political_status={{ political_status }}{% endif %}{% if age_group %}&age_group={{ age_group }}{% endif %}{% if nationality %}&nationality={{ nationality }}{% endif %}{% if education %}&education={{ education }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
+            class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+            上一页
+          </a>
+          {% else %}
+          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+            disabled>
+            上一页
+          </button>
+          {% endif %}
+          
+          {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+          <button class="px-3 py-1 border border-primary bg-primary text-white rounded-md text-sm hover:bg-blue-700">{{ num }}</button>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <a href="?page={{ num }}&page_size={{ page_size }}{% if political_status %}&political_status={{ political_status }}{% endif %}{% if age_group %}&age_group={{ age_group }}{% endif %}{% if nationality %}&nationality={{ nationality }}{% endif %}{% if education %}&education={{ education }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
+            class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">{{ num }}</a>
+          {% endif %}
+          {% endfor %}
+          
+          {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}{% if political_status %}&political_status={{ political_status }}{% endif %}{% if age_group %}&age_group={{ age_group }}{% endif %}{% if nationality %}&nationality={{ nationality }}{% endif %}{% if education %}&education={{ education }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
+            class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+            下一页
+          </a>
+          {% else %}
+          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+            disabled>
+            下一页
+          </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <!-- JavaScript 处理分页请求和筛选 -->
+    <script>
+        function changePageSize() {
+            const pageSize = document.getElementById('page_size').value;
+            // 构建当前URL，保持所有筛选条件和搜索条件
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('page', '1'); // 改变每页显示条数时，回到第一页
+            currentUrl.searchParams.set('page_size', pageSize);
+            window.location.href = currentUrl.href;
+        }
+    </script>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/residents.js' %}"></script>
+{% endblock %}

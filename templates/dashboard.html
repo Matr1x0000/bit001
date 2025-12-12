@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}管理系统 - 仪表盘 - 仪表盘{% endblock %}
+
+{% block page_title %}仪表盘{% endblock %}
+
+{% block content %}
+<!-- 仪表盘 -->
+<section id="dashboard" class="page-section">
+  <!-- 统计卡片 -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+  <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm font-medium text-gray-500">总户数</p>
+        <p class="text-2xl font-bold text-gray-800">248</p>
+      </div>
+      <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+        <i class="fa fa-home text-primary text-xl"></i>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center">
+      <span class="text-green-500 text-sm font-medium flex items-center">
+        <i class="fa fa-arrow-up mr-1"></i> 3.2%
+      </span>
+      <span class="text-gray-500 text-sm ml-2">较上月</span>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm font-medium text-gray-500">总人数</p>
+        <p class="text-2xl font-bold text-gray-800">672</p>
+      </div>
+      <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+        <i class="fa fa-users text-success text-xl"></i>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center">
+      <span class="text-green-500 text-sm font-medium flex items-center">
+        <i class="fa fa-arrow-up mr-1"></i> 1.8%
+      </span>
+      <span class="text-gray-500 text-sm ml-2">较上月</span>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm font-medium text-gray-500">特殊人群</p>
+        <p class="text-2xl font-bold text-gray-800">42</p>
+      </div>
+      <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+        <i class="fa fa-heart text-warning text-xl"></i>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center">
+      <span class="text-red-500 text-sm font-medium flex items-center">
+        <i class="fa fa-arrow-down mr-1"></i> 0.5%
+      </span>
+      <span class="text-gray-500 text-sm ml-2">较上月</span>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm font-medium text-gray-500">待处理通知</p>
+        <p class="text-2xl font-bold text-gray-800">7</p>
+      </div>
+      <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+        <i class="fa fa-bell text-danger text-xl"></i>
+      </div>
+    </div>
+    <div class="mt-4 flex items-center">
+      <span class="text-green-500 text-sm font-medium flex items-center">
+        <i class="fa fa-arrow-up mr-1"></i> 2
+      </span>
+      <span class="text-gray-500 text-sm ml-2">较昨日</span>
+    </div>
+  </div>
+</div>
+
+<!-- 图表区域 -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <!-- 年龄分布图 -->
+  <div class="bg-white rounded-lg shadow-sm p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-gray-800">年龄分布</h3>
+      <div class="flex space-x-2">
+        <button class="text-gray-500 hover:text-primary focus:outline-none">
+          <i class="fa fa-download"></i>
+        </button>
+        <button class="text-gray-500 hover:text-primary focus:outline-none">
+          <i class="fa fa-ellipsis-v"></i>
+        </button>
+      </div>
+    </div>
+    <div class="h-64">
+      <canvas id="ageDistributionChart"></canvas>
+    </div>
+  </div>
+
+  <!-- 性别比例图 -->
+  <div class="bg-white rounded-lg shadow-sm p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-gray-800">性别比例</h3>
+      <div class="flex space-x-2">
+        <button class="text-gray-500 hover:text-primary focus:outline-none">
+          <i class="fa fa-download"></i>
+        </button>
+        <button class="text-gray-500 hover:text-primary focus:outline-none">
+          <i class="fa fa-ellipsis-v"></i>
+        </button>
+      </div>
+    </div>
+    <div class="h-64">
+      <canvas id="genderRatioChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- 最近活动和通知 -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <!-- 最近入住 -->
+  <div class="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-gray-800">最近入住</h3>
+      <a href="{% url 'residents' %}" class="text-primary hover:underline text-sm font-medium">查看全部</a>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead>
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">姓名</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">年龄</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">住址</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">入住日期</th>
+            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          <tr>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-primary">
+                  <span>张</span>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-gray-900">张明</p>
+                  <p class="text-xs text-gray-500">13812345678</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">35</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">1号楼3单元501室</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-06-15</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+              <a href="#" class="text-primary hover:underline">查看详情</a>
+            </td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-success">
+                  <span>李</span>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-gray-900">李华</p>
+                  <p class="text-xs text-gray-500">13987654321</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">28</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2号楼1单元202室</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-06-12</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+              <a href="#" class="text-primary hover:underline">查看详情</a>
+            </td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <div class="flex items-center">
+                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                  <span>王</span>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-gray-900">王芳</p>
+                  <p class="text-xs text-gray-500">13765432198</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">42</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">3号楼2单元701室</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-06-10</td>
+            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+              <a href="#" class="text-primary hover:underline">查看详情</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 最新通知 -->
+  <div class="bg-white rounded-lg shadow-sm p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-semibold text-gray-800">最新通知</h3>
+      <a href="{% url 'notifications' %}" class="text-primary hover:underline text-sm font-medium">查看全部</a>
+    </div>
+    <div class="space-y-4">
+      <div class="p-3 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <i class="fa fa-exclamation-circle text-red-500"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-sm font-medium text-red-800">停水通知</h4>
+            <p class="text-xs text-red-700 mt-1">6月20日9:00-15:00将进行水管维修，请提前做好储水准备。</p>
+            <p class="text-xs text-red-600 mt-2">今天 08:30</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <i class="fa fa-info-circle text-blue-500"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-sm font-medium text-blue-800">社区活动通知</h4>
+            <p class="text-xs text-blue-700 mt-1">6月25日将举办"邻里节"活动，欢迎各位居民参加。</p>
+            <p class="text-xs text-blue-600 mt-2">昨天 16:45</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 bg-green-50 border-l-4 border-green-500 rounded-r-lg">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+            <i class="fa fa-check-circle text-green-500"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-sm font-medium text-green-800">垃圾分类表彰</h4>
+            <p class="text-xs text-green-700 mt-1">恭喜1号楼、3号楼获得上月垃圾分类优秀楼栋。</p>
+            <p class="text-xs text-green-600 mt-2">6月15日 10:20</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

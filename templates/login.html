@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - 社区居民信息管理系统</title>
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 自定义 CSS -->
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <!-- 统一的 Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1E40AF', // 专业蓝
+            secondary: '#F97316', // 温暖橙
+            success: '#10B981', // 成功绿
+            warning: '#FBBF24', // 警告黄
+            danger: '#EF4444', // 错误红
+            light: '#F8FAFC', // 浅灰白
+            dark: '#1E293B', // 深灰
+            'gray-medium': '#64748B', // 中灰
+            'gray-light': '#94A3B8' // 浅灰
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="bg-gray-100">
+  <div class="flex items-center justify-center min-h-screen">
+    <div class="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+      <!-- 登录表单 -->
+      <div class="text-center mb-8">
+        <img
+          src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/7a34a036e21e466cba82cbc511bfe550~tplv-a9rns2rl98-image.image?rcl=202511251342348B0A02E217382A875D54&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1766641430&x-signature=ogXB2I1UOHFmlYusm%2Bbl%2B8LbDXE%3D"
+          alt="社区居民信息管理系统" class="w-16 h-16 mx-auto mb-4">
+        <h1 class="text-2xl font-semibold text-primary">社区居民信息管理系统</h1>
+        <p class="text-gray-500 mt-2">请登录您的账户</p>
+      </div>
+
+      <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+
+        <!-- 错误信息显示 -->
+        {% if form.non_field_errors %}
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+          {% for error in form.non_field_errors %}
+          <p class="text-sm">{{ error }}</p>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- 用户名/邮箱输入 -->
+        <div class="mb-4">
+          <label for="username" class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fa fa-user text-gray-400"></i>
+            </div>
+            <input type="text" id="username" name="username" required
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              placeholder="请输入用户名">
+          </div>
+          {% if form.username.errors %}
+          <p class="text-red-500 text-xs mt-1">{% for error in form.username.errors %}{{ error }}{% endfor %}</p>
+          {% endif %}
+        </div>
+
+        <!-- 密码输入 -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-1">
+            <label for="password" class="block text-sm font-medium text-gray-700">密码</label>
+            <a href="#" class="text-sm text-primary hover:text-blue-700">忘记密码?</a>
+          </div>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="fa fa-lock text-gray-400"></i>
+            </div>
+            <input type="password" id="password" name="password" required
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              placeholder="请输入密码">
+          </div>
+          {% if form.password.errors %}
+          <p class="text-red-500 text-xs mt-1">{% for error in form.password.errors %}{{ error }}{% endfor %}</p>
+          {% endif %}
+        </div>
+
+        <!-- 记住我 -->
+        <div class="flex items-center mb-6">
+          <input type="checkbox" id="remember_me" name="remember_me"
+            class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded">
+          <label for="remember_me" class="ml-2 block text-sm text-gray-700">记住我</label>
+        </div>
+
+        <!-- 登录按钮 -->
+        <button type="submit"
+          class="w-full bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium">
+          <i class="fa fa-sign-in mr-2"></i> 登录
+        </button>
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-sm text-gray-500">还没有账号? <a href="#"
+            class="text-primary hover:text-blue-700 font-medium">联系管理员</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 自定义 JavaScript -->
+  <script src="{% static 'js/login.js' %}"></script>
+</body>
+
+</html>

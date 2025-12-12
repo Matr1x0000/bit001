@@ -1,0 +1,8 @@
+{
+    "[html]": {
+        "editor.defaultFormatter": "eeyore.yapf"
+    },
+    "[python]": {
+        "editor.defaultFormatter": "eeyore.yapf"
+    }
+}

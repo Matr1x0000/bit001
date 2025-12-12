@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>家庭数据测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>家庭数据展示</h1>
+
+    <!-- 登录信息展示 -->
+    <div class="login-info">
+        <h2>登录信息</h2>
+        {% if is_authenticated %}
+        <p>当前登录用户: {{ user.username }}</p>
+        <p>登录状态: 已登录</p>
+        {% else %}
+        <p>登录状态: 未登录</p>
+        {% endif %}
+    </div>
+
+    <!-- 筛选表单 -->
+    <div class="filter-form">
+        <h2>筛选条件</h2>
+        <form method="GET" action="" id="filter-form">
+            <div class="filter-row" style="margin-bottom: 15px;">
+                <div class="filter-item" style="width: 100%;">
+                    <label for="search_query">搜索：</label>
+                    <input type="text" name="search_query" id="search_query" placeholder="输入户号、房主姓名或联系电话"
+                        value="{{ search_query|default:'' }}" style="width: 300px; padding: 8px; font-size: 14px;">
+                    <button type="submit" class="filter-btn">搜索</button>
+                    {% if search_query %}
+                    <button type="button" class="reset-btn" onclick="clearSearch()" style="margin-left: 5px;">清空搜索</button>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-item">
+                    <label for="community">所属社区：</label>
+                    <select name="community" id="community" onchange="updateEstates()">
+                        <option value="" {% if not selected_community %}selected{% endif %}>全部</option>
+                        {% for community in communities %}
+                        <option value="{{ community.id }}" {% if selected_community == community.id|stringformat:'s' %}selected{% endif %}>
+                            {{ community.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label for="estate">所属小区：</label>
+                    <select name="estate" id="estate">
+                        <option value="" {% if not selected_estate %}selected{% endif %}>全部</option>
+                        {% for estate in estates %}
+                        <option value="{{ estate.id }}" {% if selected_estate == estate.id|stringformat:'s' %}selected{% endif %}>
+                            {{ estate.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <button type="submit" class="filter-btn">筛选</button>
+                    <button type="button" class="reset-btn" onclick="resetFilters()">重置</button>
+                </div>
+            </div>
+
+            <!-- 隐藏字段，保存当前分页设置 -->
+            <input type="hidden" name="page" value="1">
+            <input type="hidden" name="page_size" value="{{ page_size }}">
+        </form>
+    </div>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>户号</th>
+            <th>房主姓名</th>
+            <th>居住地址</th>
+            <th>联系电话</th>
+            <th>更新时间</th>
+            <th>备注</th>
+        </tr>
+        {% for family in families %}
+        <tr>
+            <td>{{ family.id }}</td>
+            <td>{{ family.household_number }}</td>
+            <td>{{ family.owner_name }}</td>
+            <td>{{ family.residential_address|default:"-" }}</td>
+            <td>{{ family.contact_phone|default:"-" }}</td>
+            <td>{{ family.updated_at|date:"Y-m-d H:i:s" }}</td>
+            <td>{{ family.remark|default:"-" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- 分页控件 -->
+    <div class="pagination">
+        <h3>分页信息</h3>
+        <p>共 {{ total_families }} 条记录，第 {{ page_number }}/{{ total_pages }} 页</p>
+
+        <div class="pagination-controls">
+            <!-- 页码导航 -->
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}">上一页</a>
+            {% endif %}
+
+            <!-- 显示页码范围 -->
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="current-page">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} 
+            <a href="?page={{ num }}&page_size={{ page_size }}">{{ num }}</a>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}">下一页</a>
+            {% endif %}
+        </div>
+
+        <!-- 每页显示条数选择 -->
+        <div class="page-size-selector">
+            <label for="page_size">每页显示：</label>
+            <select id="page_size" onchange="changePageSize()">
+                <option value="5" {% if page_size == '5' %}selected{% endif %}>5</option>
+                <option value="10" {% if page_size == '10' %}selected{% endif %}>10</option>
+                <option value="20" {% if page_size == '20' %}selected{% endif %}>20</option>
+                <option value="50" {% if page_size == '50' %}selected{% endif %}>50</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- JavaScript 处理分页请求和筛选 -->
+    <script>
+        function changePageSize() {
+            const pageSize = document.getElementById('page_size').value;
+            // 保持当前筛选条件，只改变每页显示条数
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('page', '1'); // 改变每页显示条数时，回到第一页
+            currentUrl.searchParams.set('page_size', pageSize);
+            window.location.href = currentUrl.href;
+        }
+
+        function updateEstates() {
+            const communityId = document.getElementById('community').value;
+            const estateSelect = document.getElementById('estate');
+            const filterForm = document.getElementById('filter-form');
+            
+            // 清空小区选择框
+            estateSelect.innerHTML = '<option value="">全部</option>';
+            
+            // 直接提交表单进行筛选，不需要等待小区列表更新
+            filterForm.submit();
+        }
+
+        function resetFilters() {
+            // 重置所有筛选条件，保持当前分页设置
+            const currentUrl = new URL(window.location.href);
+            const pageSize = currentUrl.searchParams.get('page_size') || '10';
+
+            // 构建新的URL，只包含分页参数
+            const newUrl = `${currentUrl.origin}${currentUrl.pathname}?page=1&page_size=${pageSize}`;
+            window.location.href = newUrl;
+        }
+
+        function clearSearch() {
+            // 清空搜索条件，保持其他筛选条件不变
+            const currentUrl = new URL(window.location.href);
+            const pageSize = currentUrl.searchParams.get('page_size') || '10';
+            const community = currentUrl.searchParams.get('community') || '';
+            const estate = currentUrl.searchParams.get('estate') || '';
+
+            // 构建新的URL，包含分页参数和其他筛选条件，但不包含搜索条件
+            let newUrl = `${currentUrl.origin}${currentUrl.pathname}?page=1&page_size=${pageSize}`;
+            if (community) {
+                newUrl += `&community=${community}`;
+            }
+            if (estate) {
+                newUrl += `&estate=${estate}`;
+            }
+            window.location.href = newUrl;
+        }
+    </script>
+
+    <style>
+        /* 登录信息样式 */
+        .login-info {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+        }
+        
+        /* 筛选表单样式 */
+        .filter-form {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+        }
+
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-item label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .filter-item select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        .filter-btn,
+        .reset-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .filter-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .filter-btn:hover {
+            background-color: #45a049;
+        }
+
+        .reset-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background-color: #da190b;
+        }
+        
+        /* 分页样式 */
+        .pagination {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .pagination h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .pagination-controls {
+            margin: 15px 0;
+        }
+
+        .pagination-controls a {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 0 4px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #333;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-controls a:hover {
+            background-color: #f0f0f0;
+            border-color: #ccc;
+        }
+
+        .pagination-controls .current-page {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 0 4px;
+            background-color: #4CAF50;
+            color: white;
+            border: 1px solid #4CAF50;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .page-size-selector {
+            margin: 15px 0;
+        }
+
+        .page-size-selector select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+    </style>
+</body>
+
+</html>

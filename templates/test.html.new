@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>居民数据测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>居民数据展示</h1>
+
+    <!-- 登录信息展示 -->
+    <div class="login-info">
+        <h2>登录信息</h2>
+        {% if is_authenticated %}
+        <p>当前登录用户: {{ user.username }}</p>
+        <p>登录状态: 已登录</p>
+        {% else %}
+        <p>登录状态: 未登录</p>
+        {% endif %}
+    </div>
+
+    <!-- 添加居民按钮 -->
+    <div style="margin-bottom: 20px;">
+        <a href="/add-resident/" class="filter-btn" style="padding: 8px 15px; text-decoration: none; background-color: #4CAF50; color: white; border-radius: 4px; font-weight: bold;">添加居民</a>
+    </div>
+
+    <!-- 筛选表单 -->
+    <div class="filter-form">
+        <h2>筛选条件</h2>
+        <form method="GET" action="">
+            <div class="filter-row">
+                <div class="filter-item" style="width: 100%; margin-bottom: 10px;">
+                    <label for="search_query">搜索：</label>
+                    <input type="text" name="search_query" id="search_query" placeholder="输入姓名、身份证号或手机号"
+                        value="{{ search_query|default:'' }}" style="width: 300px; padding: 5px;">
+                    <button type="submit" class="filter-btn">搜索</button>
+                    {% if search_query %}
+                    <a href="?" class="reset-btn" style="padding: 5px 15px; text-decoration: none;">清空搜索</a>
+                    {% endif %}
+                </div>
+                <div class="filter-item">
+                    <label for="political_status">政治面貌：</label>
+                    <select name="political_status" id="political_status">
+                        <option value="" {% if not political_status %}selected{% endif %}>全部</option>
+                        {% for status in political_status_choices %}
+                        <option value="{{ status.0 }}" {% if political_status == status.0|stringformat:"s" %}selected{% endif %}>
+                            {{ status.1 }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label for="age_group">年龄段：</label>
+                    <select name="age_group" id="age_group">
+                        <option value="" {% if not age_group %}selected{% endif %}>全部</option>
+                        {% for group in age_group_choices %}
+                        <option value="{{ group.0 }}" {% if age_group == group.0 %}selected{% endif %}>
+                            {{ group.1 }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label for="nationality">民族：</label>
+                    <select name="nationality" id="nationality">
+                        <option value="" {% if not nationality %}selected{% endif %}>全部</option>
+                        {% for nation in nationality_choices %}
+                        <option value="{{ nation.0 }}" {% if nationality == nation.0|stringformat:"s" %}selected{% endif %}>
+                            {{ nation.1 }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <label for="education">学历：</label>
+                    <select name="education" id="education">
+                        <option value="" {% if not education %}selected{% endif %}>全部</option>
+                        {% for edu in education_choices %}
+                        <option value="{{ edu.0 }}" {% if education == edu.0|stringformat:"s" %}selected{% endif %}>
+                            {{ edu.1 }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="filter-item">
+                    <button type="submit" class="filter-btn">筛选</button>
+                    <button type="button" class="reset-btn" onclick="resetFilters()">重置</button>
+                </div>
+            </div>
+
+            <!-- 隐藏字段，保存当前分页设置和筛选条件 -->
+            <input type="hidden" name="page" value="1">
+            <input type="hidden" name="page_size" value="{{ page_size }}">
+            {% if political_status %}
+            <input type="hidden" name="political_status" value="{{ political_status }}">
+            {% endif %}
+            {% if age_group %}
+            <input type="hidden" name="age_group" value="{{ age_group }}">
+            {% endif %}
+            {% if nationality %}
+            <input type="hidden" name="nationality" value="{{ nationality }}">
+            {% endif %}
+            {% if education %}
+            <input type="hidden" name="education" value="{{ education }}">
+            {% endif %}
+            {% if search_query %}
+            <input type="hidden" name="search_query" value="{{ search_query }}">
+            {% endif %}
+        </form>
+    </div>
+
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>姓名</th>
+            <th>性别</th>
+            <th>民族</th>
+            <th>身份证号</th>
+            <th>联系电话</th>
+            <th>政治面貌</th>
+            <th>婚姻状态</th>
+            <th>学历</th>
+            <th>是否有工作</th>
+            <th>是否死亡</th>
+        </tr>
+        {% for resident in residents %}
+        <tr>
+            <td>{{ resident.id }}</td>
+            <td>{{ resident.name }}</td>
+            <td>{{ resident.get_gender_display }}</td>
+            <td>{{ resident.get_nationality_display }}</td>
+            <td>{{ resident.id_card }}</td>
+            <td>{{ resident.phone|default:"-" }}</td>
+            <td>{{ resident.get_political_status_display|default:"-" }}</td>
+            <td>{{ resident.get_marital_status_display|default:"-" }}</td>
+            <td>{{ resident.get_education_display|default:"-" }}</td>
+            <td>{{ resident.job|yesno:"是,否" }}</td>
+            <td>{{ resident.is_dead|yesno:"是,否" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <!-- 分页控件 -->
+    <div class="pagination">
+        <h3>分页信息</h3>
+        <p>共 {{ total_residents }} 条记录，第 {{ page_number }}/{{ total_pages }} 页</p>
+
+        <div class="pagination-controls">
+            <!-- 页码导航 -->
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}{% if political_status %}&political_status={{ political_status }}{% endif %}{% if age_group %}&age_group={{ age_group }}{% endif %}{% if nationality %}&nationality={{ nationality }}{% endif %}{% if education %}&education={{ education }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}">上一页</a>
+            {% endif %}
+            
+            <!-- 显示页码范围 -->
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="current-page">{{ num }}</span>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="?page={{ num }}&page_size={{ page_size }}{% if political_status %}&political_status={{ political_status }}{% endif %}{% if age_group %}&age_group={{ age_group }}{% endif %}{% if nationality %}&nationality={{ nationality }}{% endif %}{% if education %}&education={{ education }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}">{{ num }}</a>
+            {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}{% if political_status %}&political_status={{ political_status }}{% endif %}{% if age_group %}&age_group={{ age_group }}{% endif %}{% if nationality %}&nationality={{ nationality }}{% endif %}{% if education %}&education={{ education }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}">下一页</a>
+            {% endif %}
+        </div>
+
+        <!-- 每页显示条数选择 -->
+        <div class="page-size-selector">
+            <label for="page_size">每页显示：</label>
+            <select id="page_size" onchange="changePageSize()">
+                <option value="5" {% if page_size == '5' %}selected{% endif %}>5</option>
+                <option value="10" {% if page_size == '10' %}selected{% endif %}>10</option>
+                <option value="20" {% if page_size == '20' %}selected{% endif %}>20</option>
+                <option value="50" {% if page_size == '50' %}selected{% endif %}>50</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- JavaScript 处理分页请求和筛选 -->
+    <script>
+        function changePageSize() {
+            const pageSize = document.getElementById('page_size').value;
+            // 保持当前筛选条件和搜索条件，只改变每页显示条数
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('page', '1'); // 改变每页显示条数时，回到第一页
+            currentUrl.searchParams.set('page_size', pageSize);
+            window.location.href = currentUrl.href;
+        }
+
+        function resetFilters() {
+            // 重置所有筛选条件，保持当前分页设置
+            const currentUrl = new URL(window.location.href);
+            const pageSize = currentUrl.searchParams.get('page_size') || '10';
+
+            // 构建新的URL，只包含分页参数
+            const newUrl = `${currentUrl.origin}${currentUrl.pathname}?page=1&page_size=${pageSize}`;
+            window.location.href = newUrl;
+        }
+    </script>
+
+    <style>
+        /* 筛选表单样式 */
+        .filter-form {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+        }
+
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-item label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .filter-item select {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        .filter-btn, .reset-btn {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .filter-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .filter-btn:hover {
+            background-color: #45a049;
+        }
+
+        .reset-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background-color: #da190b;
+        }
+
+        /* 分页样式 */
+        .pagination {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .pagination h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .pagination-controls {
+            margin: 10px 0;
+        }
+
+        .pagination-controls a {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 0 2px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: #333;
+            border-radius: 3px;
+        }
+
+        .pagination-controls a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .pagination-controls .current-page {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 0 2px;
+            background-color: #4CAF50;
+            color: white;
+            border: 1px solid #4CAF50;
+            border-radius: 3px;
+        }
+
+        .page-size-selector {
+            margin: 10px 0;
+        }
+
+        .page-size-selector select {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+
+        /* 登录信息样式 */
+        .login-info {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 4px;
+        }
+    </style>
+</body>
+
+</html>
