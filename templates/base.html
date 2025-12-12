@@ -211,11 +211,251 @@
   </div>
   <!-- 全局 JavaScript -->
   <script src="{% static 'js/main.js' %}"></script>
+  
+  <!-- 额外的 JavaScript 文件 -->
+  {% block extra_js %}{% endblock %}
 </body>
+
+<!-- 确认弹窗组件 -->
+<div id="confirm-modal" style="z-index: 1000;"
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-[552px] mx-4 overflow-hidden z-10 transform transition-all duration-300 ease-in-out scale-95">
+    <!-- 弹窗头部 -->
+    <div class="bg-primary text-white px-6 py-4 flex items-center justify-between">
+      <h3 id="confirm-modal-title" class="text-lg font-semibold">确认操作</h3>
+      <button id="confirm-modal-close" class="text-white hover:text-gray-200 focus:outline-none">
+        <i class="fa fa-times text-xl"></i>
+      </button>
+    </div>
+    <!-- 弹窗内容 -->
+    <div class="p-6">
+      <p id="confirm-modal-message" class="text-gray-700 mb-6">您确定要执行此操作吗？</p>
+    </div>
+    <!-- 弹窗底部 -->
+    <div class="bg-gray-50 px-6 py-4 flex items-center justify-end space-x-3">
+      <button id="confirm-modal-cancel" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 transition-all duration-200">取消</button>
+      <button id="confirm-modal-ok" class="px-6 py-2 bg-danger text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- 信息弹窗组件 -->
+<div id="info-modal" style="z-index: 1000;"
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
+  <div
+    class="bg-white rounded-lg shadow-xl w-full max-w-[552px] mx-4 overflow-hidden z-10 transform transition-all duration-300 ease-in-out scale-95">
+    <!-- 弹窗头部 -->
+    <div class="bg-primary text-white px-6 py-4 flex items-center justify-between">
+      <h3 id="info-modal-title" class="text-lg font-semibold">信息详情</h3>
+      <button id="info-modal-close" class="text-white hover:text-gray-200 focus:outline-none">
+        <i class="fa fa-times text-xl"></i>
+      </button>
+    </div>
+    <!-- 弹窗内容 -->
+    <div class="p-6">
+      <div id="info-modal-content" class="text-gray-700 mb-6 whitespace-pre-wrap overflow-x-auto">
+      </div>
+    </div>
+    <!-- 弹窗底部 -->
+    <div class="bg-gray-50 px-6 py-4 flex items-center justify-end">
+      <button id="info-modal-ok" class="px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 确认弹窗全局变量
+  let confirmCallback = null;
+  
+  // 显示确认弹窗
+  function showConfirmModal(title, message, callback) {
+    const modal = document.getElementById('confirm-modal');
+    const modalContent = modal.querySelector('.bg-white');
+    const modalTitle = document.getElementById('confirm-modal-title');
+    const modalMessage = document.getElementById('confirm-modal-message');
+    
+    // 设置弹窗内容
+    if (title) {
+      modalTitle.textContent = title;
+    } else {
+      modalTitle.textContent = '确认操作';
+    }
+    modalMessage.textContent = message || '您确定要执行此操作吗？';
+    
+    // 保存回调函数
+    confirmCallback = callback;
+    
+    // 显示弹窗
+    modal.classList.remove('hidden');
+    modal.classList.remove('opacity-0');
+    modal.classList.remove('pointer-events-none');
+    modalContent.classList.remove('scale-95');
+    modalContent.classList.add('scale-100');
+    
+    // 阻止背景滚动
+    document.body.style.overflow = 'hidden';
+  }
+  
+  // 关闭确认弹窗
+  function closeConfirmModal() {
+    const modal = document.getElementById('confirm-modal');
+    const modalContent = modal.querySelector('.bg-white');
+    
+    modal.classList.add('hidden');
+    modal.classList.add('opacity-0');
+    modal.classList.add('pointer-events-none');
+    modalContent.classList.remove('scale-100');
+    modalContent.classList.add('scale-95');
+    
+    // 恢复背景滚动
+    document.body.style.overflow = '';
+    
+    // 清空回调函数
+    confirmCallback = null;
+  }
+  
+  // 确认操作
+  function confirmOk() {
+    if (confirmCallback) {
+      confirmCallback(true);
+    }
+    closeConfirmModal();
+  }
+  
+  // 取消操作
+  function confirmCancel() {
+    if (confirmCallback) {
+      confirmCallback(false);
+    }
+    closeConfirmModal();
+  }
+  
+  // 页面加载完成后添加事件监听
+  document.addEventListener('DOMContentLoaded', function() {
+    // 添加关闭按钮事件监听
+    const closeButton = document.getElementById('confirm-modal-close');
+    const cancelButton = document.getElementById('confirm-modal-cancel');
+    const okButton = document.getElementById('confirm-modal-ok');
+    
+    if (closeButton) {
+      closeButton.addEventListener('click', confirmCancel);
+    }
+    
+    if (cancelButton) {
+      cancelButton.addEventListener('click', confirmCancel);
+    }
+    
+    if (okButton) {
+      okButton.addEventListener('click', confirmOk);
+    }
+    
+    // 点击弹窗外部关闭弹窗
+    const modal = document.getElementById('confirm-modal');
+    modal.addEventListener('click', function(event) {
+      if (event.target === modal) {
+        confirmCancel();
+      }
+    });
+    
+    // ESC键关闭弹窗
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+        confirmCancel();
+      }
+    });
+    
+    // 信息弹窗事件监听
+    const infoCloseButton = document.getElementById('info-modal-close');
+    const infoOkButton = document.getElementById('info-modal-ok');
+    
+    if (infoCloseButton) {
+      infoCloseButton.addEventListener('click', closeInfoModal);
+    }
+    
+    if (infoOkButton) {
+      infoOkButton.addEventListener('click', closeInfoModal);
+    }
+    
+    // 点击信息弹窗外部关闭弹窗
+    const infoModal = document.getElementById('info-modal');
+    infoModal.addEventListener('click', function(event) {
+      if (event.target === infoModal) {
+        closeInfoModal();
+      }
+    });
+    
+    // ESC键关闭信息弹窗
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape' && !infoModal.classList.contains('hidden')) {
+        closeInfoModal();
+      }
+    });
+  });
+  
+  // 信息弹窗全局变量
+  let infoCallback = null;
+  
+  // 显示信息弹窗
+  function showInfoModal(title, content, callback, isHtml = false) {
+    const modal = document.getElementById('info-modal');
+    const modalContent = modal.querySelector('.bg-white');
+    const modalTitle = document.getElementById('info-modal-title');
+    const modalMessage = document.getElementById('info-modal-content');
+    
+    // 设置弹窗内容
+    if (title) {
+      modalTitle.textContent = title;
+    } else {
+      modalTitle.textContent = '信息详情';
+    }
+    
+    // 根据是否是HTML内容选择设置方式
+    if (isHtml) {
+      modalMessage.innerHTML = (content || '').trim();
+    } else {
+      modalMessage.textContent = (content || '').trim();
+    }
+    
+    // 保存回调函数
+    infoCallback = callback;
+    
+    // 显示弹窗
+    modal.classList.remove('hidden');
+    modal.classList.remove('opacity-0');
+    modal.classList.remove('pointer-events-none');
+    modalContent.classList.remove('scale-95');
+    modalContent.classList.add('scale-100');
+    
+    // 阻止背景滚动
+    document.body.style.overflow = 'hidden';
+  }
+  
+  // 关闭信息弹窗
+  function closeInfoModal() {
+    const modal = document.getElementById('info-modal');
+    const modalContent = modal.querySelector('.bg-white');
+    
+    modal.classList.add('hidden');
+    modal.classList.add('opacity-0');
+    modal.classList.add('pointer-events-none');
+    modalContent.classList.remove('scale-100');
+    modalContent.classList.add('scale-95');
+    
+    // 恢复背景滚动
+    document.body.style.overflow = '';
+    
+    // 调用回调函数
+    if (infoCallback) {
+      infoCallback();
+      infoCallback = null;
+    }
+  }
+</script>
 
 <!-- 通用弹窗结构 -->
 <div id="add-resident-modal" style="z-index: 1000;"
-  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
   <div
     class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 overflow-hidden z-10 transform transition-all duration-300 ease-in-out scale-95">
     <!-- 弹窗头部 -->
@@ -255,12 +495,77 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">所属家庭</label>
-            <select name="family"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-              <option value="">请选择</option>
-              <!-- 动态加载家庭列表 -->
+            <div class="relative">
+                <input type="text" id="modal_family_search" placeholder="输入户号、房主姓名或联系电话搜索" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    <i class="fa fa-search"></i>
+                </div>
+            </div>
+            <select name="family" id="modal_family_select" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent mt-2">
+                <option value="">请选择</option>
             </select>
+            <div id="modal_family_search_result" class="text-sm text-gray-500 mt-1"></div>
           </div>
+          
+          <script>
+              // 弹窗中的家庭搜索功能
+              document.addEventListener('DOMContentLoaded', function() {
+                  const familySearchInput = document.getElementById('modal_family_search');
+                  const familySelect = document.getElementById('modal_family_select');
+                  const searchResultDiv = document.getElementById('modal_family_search_result');
+                  let searchTimeout;
+                  
+                  // 确保元素存在
+                  if (familySearchInput && familySelect && searchResultDiv) {
+                      familySearchInput.addEventListener('input', function() {
+                          // 清空搜索结果
+                          searchResultDiv.textContent = '';
+                          
+                          // 清除之前的搜索超时
+                          clearTimeout(searchTimeout);
+                          
+                          const searchQuery = familySearchInput.value.trim();
+                          
+                          if (searchQuery.length < 1) {
+                              // 如果搜索内容为空，重置下拉列表
+                              familySelect.innerHTML = '<option value="">请选择</option>';
+                              return;
+                          }
+                          
+                          // 设置搜索超时，避免频繁请求
+                          searchTimeout = setTimeout(function() {
+                              searchResultDiv.textContent = '搜索中...';
+                              
+                              // 构建搜索URL
+                              const searchUrl = `/api/families/?search=${encodeURIComponent(searchQuery)}`;
+                              
+                              // 发送搜索请求
+                              fetch(searchUrl)
+                                  .then(response => response.json())
+                                  .then(data => {
+                                      const families = data.results || [];
+                                      
+                                      // 更新下拉列表
+                                      let optionsHtml = '<option value="">请选择</option>';
+                                      if (families.length > 0) {
+                                          families.forEach(family => {
+                                              optionsHtml += `<option value="${family.id}">${family.household_number} - ${family.owner_name} (${family.contact_phone || '-'})</option>`;
+                                          });
+                                          searchResultDiv.textContent = `找到 ${families.length} 个家庭`;
+                                      } else {
+                                          searchResultDiv.textContent = '没有找到匹配的家庭';
+                                      }
+                                      familySelect.innerHTML = optionsHtml;
+                                  })
+                                  .catch(error => {
+                                      console.error('搜索家庭失败:', error);
+                                      searchResultDiv.textContent = '搜索失败，请稍后重试';
+                                  });
+                          }, 300);
+                      });
+                  }
+              });
+          </script>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">民族</label>
             <select name="nationality"
@@ -396,7 +701,7 @@
 
 <!-- 添加家庭弹窗 -->
 <div id="add-family-modal" style="z-index: 1000;"
-  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
   <div
     class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 overflow-hidden z-10 transform transition-all duration-300 ease-in-out scale-95">
     <div class="bg-primary text-white px-6 py-4 flex items-center justify-between">
@@ -454,7 +759,7 @@
 
 <!-- 发布通知弹窗 -->
 <div id="publish-notification-modal" style="z-index: 1000;"
-  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
   <div
     class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 overflow-hidden z-10 transform transition-all duration-300 ease-in-out scale-95">
     <div class="bg-primary text-white px-6 py-4 flex items-center justify-between">
@@ -510,7 +815,7 @@
 
 <!-- 查看居民详情弹窗 -->
 <div id="view-resident-modal" style="z-index: 1000;"
-  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
   <div
     class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 overflow-hidden z-10 transform transition-all duration-300 ease-in-out scale-95">
     <!-- 弹窗头部 -->
@@ -536,7 +841,7 @@
 
 <!-- 查看家庭详情弹窗 -->
 <div id="view-family-modal" style="z-index: 1000;"
-  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
   <div
     class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 overflow-hidden z-10 transform transition-all duration-300 ease-in-out scale-95">
     <!-- 弹窗头部 -->
@@ -562,7 +867,7 @@
 
 <!-- 查看地址详情弹窗 -->
 <div id="view-address-modal" style="z-index: 1000;"
-  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
   <div
     class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 overflow-hidden z-10 transform transition-all duration-300 ease-in-out scale-95">
     <!-- 弹窗头部 -->
@@ -588,7 +893,7 @@
 
 <!-- 编辑居民详情弹窗 -->
 <div id="edit-resident-modal" style="z-index: 1000;"
-  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
   <div
     class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 overflow-hidden z-10 transform transition-all duration-300 ease-in-out scale-95">
     <!-- 弹窗头部 -->
@@ -629,12 +934,95 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">所属家庭</label>
-            <select name="family" id="edit-resident-family"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-              <option value="">请选择</option>
-              <!-- 动态加载家庭列表 -->
+            <div class="relative">
+                <input type="text" id="edit_modal_family_search" placeholder="输入户号、房主姓名或联系电话搜索" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    <i class="fa fa-search"></i>
+                </div>
+            </div>
+            <select name="family" id="edit-resident-family" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent mt-2">
+                <option value="">请选择</option>
             </select>
+            <div id="edit_modal_family_search_result" class="text-sm text-gray-500 mt-1"></div>
           </div>
+          
+          <script>
+              // 编辑弹窗中的家庭搜索功能
+              document.addEventListener('DOMContentLoaded', function() {
+                  const familySearchInput = document.getElementById('edit_modal_family_search');
+                  const familySelect = document.getElementById('edit-resident-family');
+                  const searchResultDiv = document.getElementById('edit_modal_family_search_result');
+                  let searchTimeout;
+                  let currentFamilyId = null;
+                  
+                  // 确保元素存在
+                  if (familySearchInput && familySelect && searchResultDiv) {
+                              // 使用全局变量currentFamilyId，在弹窗打开时由showEditResidentModal函数设置
+                      familySearchInput.addEventListener('input', function() {
+                          // 清空搜索结果
+                          searchResultDiv.textContent = '';
+                          
+                          // 清除之前的搜索超时
+                          clearTimeout(searchTimeout);
+                          
+                          const searchQuery = familySearchInput.value.trim();
+                          
+                          if (searchQuery.length < 1) {
+                              // 如果搜索内容为空，重置下拉列表，保留当前选择
+                              let optionsHtml = '<option value="">请选择</option>';
+                              if (window.currentFamilyId && window.currentFamilyId !== null && window.currentFamilyId !== 'undefined' && window.currentFamilyId !== undefined) {
+                                  // 如果当前有选择的家庭且ID有效，保留该选项
+                                  fetch(`/api/families/${window.currentFamilyId}/`)
+                                      .then(response => response.json())
+                                      .then(family => {
+                                          optionsHtml += `<option value="${family.id}" selected>${family.household_number} - ${family.owner_name} (${family.contact_phone || '-'})</option>`;
+                                          familySelect.innerHTML = optionsHtml;
+                                      })
+                                      .catch(error => {
+                                          console.error('获取当前家庭失败:', error);
+                                          familySelect.innerHTML = optionsHtml;
+                                      });
+                              } else {
+                                  familySelect.innerHTML = optionsHtml;
+                              }
+                              return;
+                          }
+                          
+                          // 设置搜索超时，避免频繁请求
+                          searchTimeout = setTimeout(function() {
+                              searchResultDiv.textContent = '搜索中...';
+                              
+                              // 构建搜索URL
+                              const searchUrl = `/api/families/?search=${encodeURIComponent(searchQuery)}`;
+                              
+                              // 发送搜索请求
+                              fetch(searchUrl)
+                                  .then(response => response.json())
+                                  .then(data => {
+                                      const families = data.results || [];
+                                      
+                                      // 更新下拉列表
+                                      let optionsHtml = '<option value="">请选择</option>';
+                                      if (families.length > 0) {
+                                          families.forEach(family => {
+                                              const selected = family.id == window.currentFamilyId ? 'selected' : '';
+                                              optionsHtml += `<option value="${family.id}" ${selected}>${family.household_number} - ${family.owner_name} (${family.contact_phone || '-'})</option>`;
+                                          });
+                                          searchResultDiv.textContent = `找到 ${families.length} 个家庭`;
+                                      } else {
+                                          searchResultDiv.textContent = '没有找到匹配的家庭';
+                                      }
+                                      familySelect.innerHTML = optionsHtml;
+                  })
+                  .catch(error => {
+                      console.error('搜索家庭失败:', error);
+                      searchResultDiv.textContent = '搜索失败，请稍后重试';
+                  });
+              }, 300);
+          });
+                  }
+              });
+          </script>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">民族</label>
             <select name="nationality" id="edit-resident-nationality"
@@ -755,6 +1143,20 @@
               <option value="false">无工作</option>
             </select>
           </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">是否死亡</label>
+            <select name="is_dead" id="edit-resident-is_dead"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="">请选择</option>
+              <option value="true">是</option>
+              <option value="false">否</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">备注</label>
+            <textarea name="remark" id="edit-resident-remark" rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"></textarea>
+          </div>
         </div>
       </form>
     </div>
@@ -768,9 +1170,53 @@
   </div>
 </div>
 
+<script>
+    // 编辑居民表单提交处理
+    document.addEventListener('DOMContentLoaded', function() {
+        const editForm = document.getElementById('edit-resident-form');
+        if (editForm) {
+            editForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const residentId = document.getElementById('edit-resident-id').value;
+                const formData = new FormData(editForm);
+                
+                // 发送PUT请求更新居民数据
+                fetch(`/api/residents/${residentId}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrf-token]').getAttribute('content')
+                    },
+                    body: JSON.stringify(Object.fromEntries(formData))
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    return response.json().then(err => Promise.reject(err));
+                })
+                .then(data => {
+                    // 显示成功消息
+                    alert('居民信息更新成功！');
+                    // 关闭弹窗
+                    closeEditResidentModal();
+                    // 刷新页面，显示更新后的数据
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error('更新居民信息失败:', error);
+                    // 显示错误消息
+                    alert('更新居民信息失败：' + (error.detail || '未知错误'));
+                });
+            });
+        }
+    });
+</script>
+
 <!-- 编辑家庭详情弹窗 -->
 <div id="edit-family-modal" style="z-index: 1000;"
-  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center transition-all duration-300 ease-in-out opacity-0 pointer-events-none">
   <div
     class="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4 overflow-hidden z-10 transform transition-all duration-300 ease-in-out scale-95">
     <!-- 弹窗头部 -->

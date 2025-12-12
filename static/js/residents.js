@@ -279,9 +279,11 @@ async function editResident(residentId) {
 }
 
 // 删除居民
-async function deleteResident(residentId) {
-    if (confirm('确定要删除该居民吗？')) {
-        try {
+function deleteResident(residentId) {
+    showConfirmModal('确认删除', '确定要删除该居民吗？', function(confirmed) {
+        if (confirmed) {
+            (async function() {
+                try {
             const response = await fetch(`${API_BASE_URL}/residents/${residentId}/`, {
                 method: 'DELETE',
                 headers: {
@@ -303,7 +305,9 @@ async function deleteResident(residentId) {
             console.error('Error deleting resident:', error);
             showNotification('删除居民失败', 'error');
         }
-    }
+            })();
+        }
+    });
 }
 
 // 初始化添加居民按钮

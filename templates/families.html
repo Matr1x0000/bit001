@@ -9,291 +9,244 @@
 <!-- 家庭档案管理 -->
 <section id="families" class="page-section">
   <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-      <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-        <div class="relative">
-          <input type="text" placeholder="搜索家庭..."
-            class="w-full sm:w-64 pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
-          <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-            <i class="fa fa-search"></i>
+    <form method="GET" action="" id="filter-form" class="mb-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+          <div class="relative">
+            <input type="text" placeholder="输入户号、房主姓名或联系电话" name="search_query"
+              value="{{ search_query|default:'' }}"
+              class="w-full sm:w-64 pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+            <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <i class="fa fa-search"></i>
+            </div>
+          </div>
+
+          <button type="submit"
+            class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent flex items-center justify-center text-sm">
+            <i class="fa fa-search mr-2"></i> 搜索
+          </button>
+          
+          <a href="/add-family/"
+            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center text-sm">
+            <i class="fa fa-plus mr-2"></i> 添加家庭
+          </a>
+        </div>
+      </div>
+
+      <!-- 筛选器 -->
+      <div class="flex flex-wrap items-center mb-6 pb-4 border-b bg-white p-4 rounded-lg shadow-sm">
+        <div class="flex flex-wrap items-end space-x-4 mb-4 sm:mb-0">
+          <div class="min-w-[150px]">
+            <label class="block text-sm font-medium text-gray-700 mb-1">所属社区</label>
+            <select name="community" id="community" onchange="updateEstatesAndHutongs()"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+              <option value="" {% if not selected_community %}selected{% endif %}>全部</option>
+              {% for community in communities %}
+              <option value="{{ community.id }}" {% if selected_community == community.id|stringformat:'s' %}selected{% endif %}>{{ community.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="min-w-[150px]">
+            <label class="block text-sm font-medium text-gray-700 mb-1">所属小区</label>
+            <select name="estate" id="estate"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+              <option value="" {% if not selected_estate %}selected{% endif %}>全部</option>
+            </select>
+          </div>
+          <div class="min-w-[150px]">
+            <label class="block text-sm font-medium text-gray-700 mb-1">所属胡同</label>
+            <select name="hutong" id="hutong"
+              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+              <option value="" {% if not selected_hutong %}selected{% endif %}>全部</option>
+            </select>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button type="submit"
+              class="bg-primary text-white hover:bg-blue-700 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent flex items-center justify-center text-sm">
+              <i class="fa fa-filter mr-2"></i> 筛选
+            </button>
+            <button type="button"
+              onclick="window.location.href='{{ request.path }}?page=1&page_size={{ page_size|default:10 }}'"
+              class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent flex items-center justify-center text-sm">
+              <i class="fa fa-refresh mr-2"></i> 重置
+            </button>
           </div>
         </div>
-
-        <button id="add-family-btn"
-          class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center text-sm">
-          <i class="fa fa-plus mr-2"></i> 添加家庭
-        </button>
-
-        <button id="reset-btn"
-          class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent flex items-center justify-center text-sm">
-          <i class="fa fa-refresh mr-2"></i> 重置
-        </button>
       </div>
-    </div>
-
-
+      
+      <!-- 隐藏字段，保存当前分页设置 -->
+      <input type="hidden" name="page" value="1">
+      <input type="hidden" name="page_size" value="{{ page_size }}">
+    </form>
 
     <!-- 家庭列表 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- 家庭卡片 1 -->
-      <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-        <div class="bg-primary bg-opacity-10 p-4 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-primary">张明家庭</h3>
-            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">自住房</span>
-          </div>
-          <p class="text-sm text-gray-600 mt-1">户号: HZ20230615001</p>
-        </div>
-        <div class="p-6 min-h-[180px]">
-          <div class="flex items-start mb-4">
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-primary">
-              <i class="fa fa-home"></i>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-700">住址</p>
-              <p class="text-sm text-gray-500">1号楼3单元501室</p>
-            </div>
-          </div>
-          <div class="flex items-start">
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-success">
-              <i class="fa fa-users"></i>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-700">家庭成员</p>
-              <div class="flex flex-wrap gap-1 mt-1">
-                <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">张明</span>
-                <span class="px-2 py-0.5 bg-red-50 text-red-700 text-xs rounded-full">张丽</span>
-                <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">张小明</span>
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+        <thead>
+          <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="px-6 py-3 border-b border-gray-200">户号</th>
+            <th class="px-6 py-3 border-b border-gray-200">房主姓名</th>
+            <th class="px-6 py-3 border-b border-gray-200">居住地址</th>
+            <th class="px-6 py-3 border-b border-gray-200">联系电话</th>
+            <th class="px-6 py-3 border-b border-gray-200">更新时间</th>
+            <th class="px-6 py-3 border-b border-gray-200">备注</th>
+            <th class="px-6 py-3 border-b border-gray-200">操作</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for family in families %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ family.household_number }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ family.owner_name }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.residential_address|default:"-" }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.contact_phone|default:"-" }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.updated_at|date:"Y-m-d H:i:s" }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.remark|default:"-" }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <a href="/residents/?family_id={{ family.id }}" class="text-primary hover:text-blue-700 mr-3">查看居民</a>
+              <a href="/edit-family/{{ family.id }}/" class="text-gray-600 hover:text-gray-900 mr-3">编辑</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+              <div class="flex flex-col items-center justify-center">
+                <i class="fa fa-users text-4xl mb-4"></i>
+                <h3 class="text-lg font-medium mb-2">未找到符合条件的家庭数据</h3>
+                <p class="text-sm">请尝试调整筛选条件</p>
               </div>
-            </div>
-          </div>
-
-        </div>
-        <div class="bg-gray-50 p-3 border-t border-gray-200 flex justify-end space-x-2">
-          <button class="view-family-btn px-3 py-1 text-sm text-gray-600 hover:text-primary focus:outline-none"
-            data-id="{{ family.id }}" data-target="view-family">
-            <i class="fa fa-eye mr-1"></i> 查看详情
-          </button>
-          <button class="px-3 py-1 text-sm text-gray-600 hover:text-primary focus:outline-none">
-            <i class="fa fa-edit mr-1"></i> 编辑
-          </button>
-        </div>
-      </div>
-
-      <!-- 家庭卡片 2 -->
-      <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-        <div class="bg-primary bg-opacity-10 p-4 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-primary">李华家庭</h3>
-            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">出租房</span>
-          </div>
-          <p class="text-sm text-gray-600 mt-1">户号: HZ20230612002</p>
-        </div>
-        <div class="p-6 min-h-[180px]">
-          <div class="flex items-start mb-4">
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-primary">
-              <i class="fa fa-home"></i>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-700">住址</p>
-              <p class="text-sm text-gray-500">2号楼1单元202室</p>
-            </div>
-          </div>
-          <div class="flex items-start">
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-success">
-              <i class="fa fa-users"></i>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-700">家庭成员</p>
-              <div class="flex flex-wrap gap-1 mt-1">
-                <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">李华</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-        <div class="bg-gray-50 p-3 border-t border-gray-200 flex justify-end space-x-2">
-          <button class="view-family-btn px-3 py-1 text-sm text-gray-600 hover:text-primary focus:outline-none"
-            data-id="{{ family.id }}" data-target="view-family">
-            <i class="fa fa-eye mr-1"></i> 查看详情
-          </button>
-          <button class="edit-family-btn px-3 py-1 text-sm text-gray-600 hover:text-primary focus:outline-none"
-            data-id="{{ family.id }}" data-target="edit-family">
-            <i class="fa fa-edit mr-1"></i> 编辑
-          </button>
-        </div>
-      </div>
-
-      <!-- 家庭卡片 3 -->
-      <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-        <div class="bg-primary bg-opacity-10 p-4 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-primary">王芳家庭</h3>
-            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">自住房</span>
-          </div>
-          <p class="text-sm text-gray-600 mt-1">户号: HZ20230610003</p>
-        </div>
-        <div class="p-6 min-h-[180px]">
-          <div class="flex items-start mb-4">
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-primary">
-              <i class="fa fa-home"></i>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-700">住址</p>
-              <p class="text-sm text-gray-500">3号楼2单元701室</p>
-            </div>
-          </div>
-          <div class="flex items-start">
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-success">
-              <i class="fa fa-users"></i>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-700">家庭成员</p>
-              <div class="flex flex-wrap gap-1 mt-1">
-                <span class="px-2 py-0.5 bg-red-50 text-red-700 text-xs rounded-full">王芳</span>
-                <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">王刚</span>
-                <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">王乐乐</span>
-                <span class="px-2 py-0.5 bg-red-50 text-red-700 text-xs rounded-full">王奶奶</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-        <div class="bg-gray-50 p-3 border-t border-gray-200 flex justify-end space-x-2">
-          <button class="px-3 py-1 text-sm text-gray-600 hover:text-primary focus:outline-none">
-            <i class="fa fa-eye mr-1"></i> 查看详情
-          </button>
-          <button class="px-3 py-1 text-sm text-gray-600 hover:text-primary focus:outline-none">
-            <i class="fa fa-edit mr-1"></i> 编辑
-          </button>
-        </div>
-      </div>
-
-      <!-- 家庭卡片 4 -->
-      <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-        <div class="bg-primary bg-opacity-10 p-4 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-primary">赵伟家庭</h3>
-            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">自住房</span>
-          </div>
-          <p class="text-sm text-gray-600 mt-1">户号: HZ20230528004</p>
-        </div>
-        <div class="p-6 min-h-[180px]">
-          <div class="flex items-start mb-4">
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-primary">
-              <i class="fa fa-home"></i>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-700">住址</p>
-              <p class="text-sm text-gray-500">1号楼2单元301室</p>
-            </div>
-          </div>
-          <div class="flex items-start">
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-success">
-              <i class="fa fa-users"></i>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-700">家庭成员</p>
-              <div class="flex flex-wrap gap-1 mt-1">
-                <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">赵伟</span>
-                <span class="px-2 py-0.5 bg-red-50 text-red-700 text-xs rounded-full">赵奶奶</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-        <div class="bg-gray-50 p-3 border-t border-gray-200 flex justify-end space-x-2">
-          <button class="px-3 py-1 text-sm text-gray-600 hover:text-primary focus:outline-none">
-            <i class="fa fa-eye mr-1"></i> 查看详情
-          </button>
-          <button class="px-3 py-1 text-sm text-gray-600 hover:text-primary focus:outline-none">
-            <i class="fa fa-edit mr-1"></i> 编辑
-          </button>
-        </div>
-      </div>
-
-      <!-- 家庭卡片 5 -->
-      <div class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-        <div class="bg-primary bg-opacity-10 p-4 border-b border-gray-200">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-primary">陈静家庭</h3>
-            <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">出租房</span>
-          </div>
-          <p class="text-sm text-gray-600 mt-1">户号: HZ20230520005</p>
-        </div>
-        <div class="p-6 min-h-[180px]">
-          <div class="flex items-start mb-4">
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-primary">
-              <i class="fa fa-home"></i>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-700">住址</p>
-              <p class="text-sm text-gray-500">4号楼1单元402室</p>
-            </div>
-          </div>
-          <div class="flex items-start">
-            <div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-success">
-              <i class="fa fa-users"></i>
-            </div>
-            <div class="ml-3">
-              <p class="text-sm font-medium text-gray-700">家庭成员</p>
-              <div class="flex flex-wrap gap-1 mt-1">
-                <span class="px-2 py-0.5 bg-red-50 text-red-700 text-xs rounded-full">陈静</span>
-                <span class="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full">陈小明</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-        <div class="bg-gray-50 p-3 border-t border-gray-200 flex justify-end space-x-2">
-          <button class="px-3 py-1 text-sm text-gray-600 hover:text-primary focus:outline-none">
-            <i class="fa fa-eye mr-1"></i> 查看详情
-          </button>
-          <button class="px-3 py-1 text-sm text-gray-600 hover:text-primary focus:outline-none">
-            <i class="fa fa-edit mr-1"></i> 编辑
-          </button>
-        </div>
-      </div>
-
-
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
 
+
+
     <!-- 分页 -->
-    <div class="flex items-center justify-between mt-6">
-      <div class="text-sm text-gray-500">
-        显示 <span class="font-medium">1</span> 到 <span class="font-medium">5</span> 条，共 <span
-          class="font-medium">24</span> 条记录
+    <div class="flex flex-col sm:flex-row items-center justify-between mt-6">
+      <div class="text-sm text-gray-500 mb-4 sm:mb-0">
+        显示 <span class="font-medium">{{ page_obj.start_index }}</span> 到 <span class="font-medium">{{ page_obj.end_index }}</span> 条，共 <span class="font-medium">{{ total_families }}</span> 条记录
       </div>
       <div class="flex items-center space-x-2">
-        <button
-          class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-          disabled>
-          上一页
-        </button>
-        <button class="px-3 py-1 border border-primary bg-primary text-white rounded-md text-sm">
-          1
-        </button>
-        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">
-          2
-        </button>
-        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">
-          3
-        </button>
-        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">
-          4
-        </button>
-        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">
-          5
-        </button>
-        <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50">
-          下一页
-        </button>
+        <!-- 每页显示条数选择 -->
+        <div class="mr-4 flex items-center">
+          <span class="text-sm text-gray-500 mr-2">每页显示：</span>
+          <select id="page_size" onchange="changePageSize()"
+            class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="5" {% if page_size == '5' %}selected{% endif %}>5</option>
+            <option value="10" {% if page_size == '10' %}selected{% endif %}>10</option>
+            <option value="20" {% if page_size == '20' %}selected{% endif %}>20</option>
+            <option value="50" {% if page_size == '50' %}selected{% endif %}>50</option>
+          </select>
+        </div>
+        
+        <!-- 页码导航 -->
+        <div class="flex items-center space-x-1">
+          {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}{% if selected_community %}&community={{ selected_community }}{% endif %}{% if selected_estate %}&estate={{ selected_estate }}{% endif %}{% if selected_hutong %}&hutong={{ selected_hutong }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
+            class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+            上一页
+          </a>
+          {% else %}
+          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+            disabled>
+            上一页
+          </button>
+          {% endif %}
+          
+          {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+          <button class="px-3 py-1 border border-primary bg-primary text-white rounded-md text-sm hover:bg-blue-700">{{ num }}</button>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <a href="?page={{ num }}&page_size={{ page_size }}{% if selected_community %}&community={{ selected_community }}{% endif %}{% if selected_estate %}&estate={{ selected_estate }}{% endif %}{% if selected_hutong %}&hutong={{ selected_hutong }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
+            class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">{{ num }}</a>
+          {% endif %}
+          {% endfor %}
+          
+          {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}{% if selected_community %}&community={{ selected_community }}{% endif %}{% if selected_estate %}&estate={{ selected_estate }}{% endif %}{% if selected_hutong %}&hutong={{ selected_hutong }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
+            class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+            下一页
+          </a>
+          {% else %}
+          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+            disabled>
+            下一页
+          </button>
+          {% endif %}
+        </div>
       </div>
     </div>
   </div>
 </section>
-{% endblock %}
 
-{% block extra_js %}
 <script src="{% static 'js/families.js' %}"></script>
+<script>
+  // 页面加载时初始化
+  document.addEventListener('DOMContentLoaded', function() {
+    // 如果已经选择了社区，加载对应的小区和胡同数据
+    const communityId = document.getElementById('community').value;
+    if (communityId) {
+      updateEstatesAndHutongs();
+    }
+  });
+
+  function changePageSize() {
+    const pageSize = document.getElementById('page_size').value;
+    // 构建当前URL，保持所有筛选条件和搜索条件
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('page', '1'); // 改变每页显示条数时，回到第一页
+    currentUrl.searchParams.set('page_size', pageSize);
+    window.location.href = currentUrl.href;
+  }
+
+  function updateEstatesAndHutongs() {
+    const communityId = document.getElementById('community').value;
+    const estateSelect = document.getElementById('estate');
+    const hutongSelect = document.getElementById('hutong');
+    
+    // 清空小区选择框和胡同选择框
+    estateSelect.innerHTML = '<option value="">全部</option>';
+    hutongSelect.innerHTML = '<option value="">全部</option>';
+    
+    // 如果选择了社区，通过AJAX获取对应的小区和胡同数据
+    if (communityId) {
+      // 获取小区数据
+      fetch(`/api/housing-estates/?community=${communityId}`)
+        .then(response => response.json())
+        .then(data => {
+          const estates = data.results || [];
+          estates.forEach(estate => {
+            const option = document.createElement('option');
+            option.value = estate.id;
+            option.textContent = estate.name;
+            estateSelect.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('获取小区数据失败:', error);
+        });
+      
+      // 获取胡同数据
+      fetch(`/api/hutongs/?community=${communityId}`)
+        .then(response => response.json())
+        .then(data => {
+          const hutongs = data.results || [];
+          hutongs.forEach(hutong => {
+            const option = document.createElement('option');
+            option.value = hutong.id;
+            option.textContent = hutong.name;
+            hutongSelect.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('获取胡同数据失败:', error);
+        });
+    }
+  }
+
+
+</script>
 {% endblock %}

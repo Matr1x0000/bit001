@@ -211,15 +211,76 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="family">所属家庭</label>
-                    <select id="family" name="family">
+                    <label for="family_search">所属家庭</label>
+                    <div class="relative">
+                        <input type="text" id="family_search" placeholder="输入户号、房主姓名或联系电话搜索" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                            <i class="fa fa-search"></i>
+                        </div>
+                    </div>
+                    <select id="family" name="family" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent mt-2">
                         <option value="">请选择</option>
-                        {% for family in families %}
-                            <option value="{{ family.id }}">{{ family.household_number }} - {{ family.owner_name }}</option>
-                        {% endfor %}
                     </select>
+                    <div id="family_search_result" class="text-sm text-gray-500 mt-1"></div>
                 </div>
             </div>
+            
+            <script>
+                // 家庭搜索功能
+                document.addEventListener('DOMContentLoaded', function() {
+                    const familySearchInput = document.getElementById('family_search');
+                    const familySelect = document.getElementById('family');
+                    const searchResultDiv = document.getElementById('family_search_result');
+                    let searchTimeout;
+                    
+                    familySearchInput.addEventListener('input', function() {
+                        // 清空搜索结果
+                        searchResultDiv.textContent = '';
+                        
+                        // 清除之前的搜索超时
+                        clearTimeout(searchTimeout);
+                        
+                        const searchQuery = familySearchInput.value.trim();
+                        
+                        if (searchQuery.length < 1) {
+                            // 如果搜索内容为空，重置下拉列表
+                            familySelect.innerHTML = '<option value="">请选择</option>';
+                            return;
+                        }
+                        
+                        // 设置搜索超时，避免频繁请求
+                        searchTimeout = setTimeout(function() {
+                            searchResultDiv.textContent = '搜索中...';
+                            
+                            // 构建搜索URL
+                            const searchUrl = `/api/families/?search=${encodeURIComponent(searchQuery)}`;
+                            
+                            // 发送搜索请求
+                            fetch(searchUrl)
+                                .then(response => response.json())
+                                .then(data => {
+                                    const families = data.results || [];
+                                    
+                                    // 更新下拉列表
+                                    let optionsHtml = '<option value="">请选择</option>';
+                                    if (families.length > 0) {
+                                        families.forEach(family => {
+                                            optionsHtml += `<option value="${family.id}">${family.household_number} - ${family.owner_name} (${family.contact_phone || '-'})</option>`;
+                                        });
+                                        searchResultDiv.textContent = `找到 ${families.length} 个家庭`;
+                                    } else {
+                                        searchResultDiv.textContent = '没有找到匹配的家庭';
+                                    }
+                                    familySelect.innerHTML = optionsHtml;
+                                })
+                                .catch(error => {
+                                    console.error('搜索家庭失败:', error);
+                                    searchResultDiv.textContent = '搜索失败，请稍后重试';
+                                });
+                        }, 300);
+                    });
+                });
+            </script>
             
             <div class="form-row">
                 <div class="form-group">

@@ -160,13 +160,15 @@ function editAddress(row) {
 
 // 删除地址
 function deleteAddress(row) {
-    if (confirm('确定要删除该地址吗？')) {
-        // 这里可以添加删除地址的逻辑
-        console.log('删除地址');
-        row.remove();
-        updateSelectedAddresses();
-        showNotification('地址已删除', 'success');
-    }
+    showConfirmModal('确认删除', '确定要删除该地址吗？', function(confirmed) {
+        if (confirmed) {
+            // 这里可以添加删除地址的逻辑
+            console.log('删除地址');
+            row.remove();
+            updateSelectedAddresses();
+            showNotification('地址已删除', 'success');
+        }
+    });
 }
 
 // 更新已选择的地址数量

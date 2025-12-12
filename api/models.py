@@ -10,10 +10,14 @@ from django.core.validators import RegexValidator
 
 class Community(models.Model):
     name = models.CharField(max_length=50, verbose_name="社区名称")
-    office_address = models.CharField(
-        max_length=100, verbose_name="办公地址", null=True, blank=True)
-    office_phone = models.CharField(
-        max_length=15, verbose_name="办公电话", null=True, blank=True)
+    office_address = models.CharField(max_length=100,
+                                      verbose_name="办公地址",
+                                      null=True,
+                                      blank=True)
+    office_phone = models.CharField(max_length=15,
+                                    verbose_name="办公电话",
+                                    null=True,
+                                    blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
     # 备注字段
@@ -26,21 +30,28 @@ class Community(models.Model):
     def __str__(self):
         return f"平泉市 - {self.name}"
 
+
 # 社区工作者模型
 
 
 class SocialWorker(models.Model):
-    community = models.ForeignKey(
-        Community, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="所属社区")
+    community = models.ForeignKey(Community,
+                                  on_delete=models.SET_NULL,
+                                  null=True,
+                                  blank=True,
+                                  verbose_name="所属社区")
     name = models.CharField(max_length=20, verbose_name="姓名")
-    gender = models.SmallIntegerField(choices=[
-        (1, "男"), (2, "女")], default=1, verbose_name="性别")
-    phone = models.CharField(
-        max_length=15, verbose_name="联系电话", null=True, blank=True)
+    gender = models.SmallIntegerField(choices=[(1, "男"), (2, "女")],
+                                      default=1,
+                                      verbose_name="性别")
+    phone = models.CharField(max_length=15,
+                             verbose_name="联系电话",
+                             null=True,
+                             blank=True)
     birth_date = models.DateField(verbose_name="出生年月", null=True, blank=True)
     is_secretary = models.BooleanField(default=False, verbose_name="是否为书记")
-    is_baned = models.BooleanField(
-        default=True, verbose_name="是否在职（True:在职, False:离职）")
+    is_baned = models.BooleanField(default=True,
+                                   verbose_name="是否在职（True:在职, False:离职）")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
     # 备注字段
@@ -53,19 +64,29 @@ class SocialWorker(models.Model):
     def __str__(self):
         return f" {self.community.name} - {self.name}({self.gender}) - {self.phone}"
 
+
 # 小区模型
 
 
 class HousingEstate(models.Model):
     name = models.CharField(max_length=50, verbose_name="小区名称")
-    address = models.CharField(
-        max_length=100, verbose_name="小区地址", null=True, blank=True)
-    community = models.ForeignKey(
-        Community, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="所属社区")
-    property_company = models.CharField(
-        max_length=50, verbose_name="物业公司", null=True, blank=True)
-    property_phone = models.CharField(
-        max_length=15, verbose_name="物业电话", null=True, blank=True)
+    address = models.CharField(max_length=100,
+                               verbose_name="小区地址",
+                               null=True,
+                               blank=True)
+    community = models.ForeignKey(Community,
+                                  on_delete=models.SET_NULL,
+                                  null=True,
+                                  blank=True,
+                                  verbose_name="所属社区")
+    property_company = models.CharField(max_length=50,
+                                        verbose_name="物业公司",
+                                        null=True,
+                                        blank=True)
+    property_phone = models.CharField(max_length=15,
+                                      verbose_name="物业电话",
+                                      null=True,
+                                      blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
     # 备注字段
@@ -79,6 +100,7 @@ class HousingEstate(models.Model):
     def __str__(self):
         return f"{self.community.name} - {self.name}"
 
+
 # 楼栋模型
 
 
@@ -87,13 +109,16 @@ class Building(models.Model):
                                on_delete=models.CASCADE,
                                verbose_name="所属小区")
     name = models.CharField(max_length=20, verbose_name="楼栋名称/编号")
-    building_type = models.SmallIntegerField(
-        choices=[(1, "多层"), (2, "高层")],
-        verbose_name="建筑类型", null=True, blank=True)
-    total_floors = models.IntegerField(
-        verbose_name="总层数", null=True, blank=True)
-    units_per_floor = models.IntegerField(
-        verbose_name="一层几户", null=True, blank=True)
+    building_type = models.SmallIntegerField(choices=[(1, "多层"), (2, "高层")],
+                                             verbose_name="建筑类型",
+                                             null=True,
+                                             blank=True)
+    total_floors = models.IntegerField(verbose_name="总层数",
+                                       null=True,
+                                       blank=True)
+    units_per_floor = models.IntegerField(verbose_name="一层几户",
+                                          null=True,
+                                          blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
     # 备注字段
@@ -106,12 +131,14 @@ class Building(models.Model):
     def __str__(self):
         return f"{self.estate.name} - {self.name}({self.building_type})"
 
+
 # 单元模型
 
 
 class Unit(models.Model):
-    building = models.ForeignKey(
-        Building, on_delete=models.CASCADE, verbose_name="所属楼栋")
+    building = models.ForeignKey(Building,
+                                 on_delete=models.CASCADE,
+                                 verbose_name="所属楼栋")
     name = models.CharField(max_length=10, verbose_name="单元名称/编号")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
@@ -125,12 +152,14 @@ class Unit(models.Model):
     def __str__(self):
         return f"{self.building} - {self.name}"
 
+
 # 楼房房号模型
 
 
 class Apartment(models.Model):
-    unit = models.ForeignKey(
-        Unit, on_delete=models.CASCADE, verbose_name="所属单元")
+    unit = models.ForeignKey(Unit,
+                             on_delete=models.CASCADE,
+                             verbose_name="所属单元")
     house_number = models.CharField(max_length=10, verbose_name="房号")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
@@ -144,13 +173,17 @@ class Apartment(models.Model):
     def __str__(self):
         return f"{self.unit} - {self.house_number}"
 
+
 # 胡同模型
 
 
 class Hutong(models.Model):
     name = models.CharField(max_length=50, verbose_name="胡同名称/编号")
-    community = models.ForeignKey(
-        Community, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="所属社区")
+    community = models.ForeignKey(Community,
+                                  on_delete=models.SET_NULL,
+                                  null=True,
+                                  blank=True,
+                                  verbose_name="所属社区")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
     # 备注字段
@@ -163,12 +196,14 @@ class Hutong(models.Model):
     def __str__(self):
         return self.name
 
+
 # 平房房号模型
 
 
 class SingleHouse(models.Model):
-    hutong = models.ForeignKey(
-        Hutong, on_delete=models.CASCADE, verbose_name="所属胡同")
+    hutong = models.ForeignKey(Hutong,
+                               on_delete=models.CASCADE,
+                               verbose_name="所属胡同")
     house_number = models.CharField(max_length=10, verbose_name="房号")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
@@ -181,6 +216,7 @@ class SingleHouse(models.Model):
 
     def __str__(self):
         return f"{self.hutong.name} - {self.house_number}"
+
 
 # 居住地址模型
 
@@ -245,6 +281,7 @@ class ResidentialAddress(models.Model):
         else:  # 平房
             return f"{self.hutong.name} - {self.single_house.house_number}" if self.hutong and self.single_house else "未设置完整地址"
 
+
 # 扩展User模型，添加角色字段
 
 
@@ -255,10 +292,9 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User,
                                 on_delete=models.CASCADE,
                                 verbose_name="关联用户")
-    role = models.SmallIntegerField(
-        choices=ROLE_CHOICES,
-        default=2,
-        verbose_name="角色")
+    role = models.SmallIntegerField(choices=ROLE_CHOICES,
+                                    default=2,
+                                    verbose_name="角色")
     name = models.CharField(max_length=20,
                             verbose_name="姓名",
                             blank=True,
@@ -267,10 +303,9 @@ class UserProfile(models.Model):
                              verbose_name="联系电话",
                              blank=True,
                              null=True)
-    department = models.SmallIntegerField(
-        choices=DEPARTMENT_CHOICES,
-        default=3,
-        verbose_name="部门")
+    department = models.SmallIntegerField(choices=DEPARTMENT_CHOICES,
+                                          default=3,
+                                          verbose_name="部门")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
     # 备注字段
@@ -282,6 +317,7 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.department} - {self.user.username} - {self.phone}"
+
 
 # 居民模型
 
@@ -371,6 +407,7 @@ class Resident(models.Model):
     def __str__(self):
         return f"{self.name} - {self.id_card}"
 
+
 # 家庭模型
 
 
@@ -404,24 +441,28 @@ class Family(models.Model):
     def __str__(self):
         return f"{self.household_number} - {self.owner_name}"
 
+
 # 通知模型
 
 
 class Notification(models.Model):
-    NOTIFICATION_TYPE_CHOICES = [
-        (1, "紧急"),
-        (2, "普通"),
-        (3, "活动")
-    ]
-
+    NOTIFICATION_TYPE_CHOICES = [(1, "紧急"), (2, "普通"), (3, "活动")]
+    NOTIFICATION_TIME_TYPE_CHOICES = [(1, "长期"), (2, "定期")]
     title = models.CharField(max_length=100, verbose_name="通知标题")
     content = models.TextField(verbose_name="通知内容")
     notification_type = models.SmallIntegerField(
         choices=NOTIFICATION_TYPE_CHOICES, verbose_name="通知类型")
-    publisher = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name="发布人")
+    publisher = models.ForeignKey(User,
+                                  on_delete=models.CASCADE,
+                                  verbose_name="发布人")
     publish_time = models.DateTimeField(auto_now_add=True, verbose_name="发布时间")
-    valid_until = models.DateTimeField(verbose_name="有效期至")
+    notification_time_type = models.SmallIntegerField(
+        default=1,
+        choices=NOTIFICATION_TIME_TYPE_CHOICES,
+        verbose_name="通知时间类型")
+    valid_until = models.DateTimeField(verbose_name="有效期至",
+                                       blank=True,
+                                       null=True)
     view_count = models.IntegerField(default=0, verbose_name="阅读次数")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
@@ -436,24 +477,65 @@ class Notification(models.Model):
     def __str__(self):
         return f"***{self.notification_type}***{self.title} - {self.publish_time}"
 
-# 通知阅读状态模型
+
+# 通知附件模型
 
 
-class NotificationRead(models.Model):
-    notification = models.ForeignKey(
-        Notification, on_delete=models.CASCADE, verbose_name="通知")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="用户")
-    is_read = models.BooleanField(default=False, verbose_name="是否已读")
-    read_time = models.DateTimeField(
-        null=True, blank=True, verbose_name="阅读时间")
+import os
+from django.utils import timezone
+
+def upload_to_notification_attachments(instance, filename):
+    """自定义附件上传路径和文件名，防止重名"""
+    # 获取文件扩展名
+    ext = os.path.splitext(filename)[1]
+    # 使用时间戳和随机数生成唯一文件名
+    timestamp = timezone.now().strftime('%Y%m%d%H%M%S%f')
+    unique_filename = f'{timestamp}{ext}'
+    # 返回完整的上传路径
+    return f'notification_attachments/{unique_filename}'
+
+class NotificationAttachment(models.Model):
+    notification = models.ForeignKey(Notification,
+                                     on_delete=models.CASCADE,
+                                     verbose_name="关联通知",
+                                     related_name="attachments")
+    file = models.FileField(upload_to=upload_to_notification_attachments, verbose_name="附件文件")
+    filename = models.CharField(max_length=255, verbose_name="原始文件名")
+    description = models.CharField(max_length=255, blank=True, null=True, verbose_name="附件描述")
+    upload_time = models.DateTimeField(auto_now_add=True, verbose_name="上传时间")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
     class Meta:
-        verbose_name = "3. 通知阅读状态"  # 添加序号来控制顺序
-        verbose_name_plural = "3. 通知阅读状态列表"
+        verbose_name = "3. 通知附件"  # 添加序号来控制顺序
+        verbose_name_plural = "3. 通知附件列表"
+
+    def __str__(self):
+        return f"{self.notification.title} - {self.filename}"
+
+
+# 通知阅读状态模型
+
+
+class NotificationRead(models.Model):
+    notification = models.ForeignKey(Notification,
+                                     on_delete=models.CASCADE,
+                                     verbose_name="通知")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="用户")
+    is_read = models.BooleanField(default=False, verbose_name="是否已读")
+    read_time = models.DateTimeField(null=True,
+                                     blank=True,
+                                     verbose_name="阅读时间")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 备注字段
+    remark = models.TextField(verbose_name="备注", blank=True, null=True)
+
+    class Meta:
+        verbose_name = "4. 通知阅读状态"  # 更新序号来控制顺序
+        verbose_name_plural = "4. 通知阅读状态列表"
         unique_together = ('notification', 'user')
 
     def __str__(self):

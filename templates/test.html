@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>家庭数据测试</title>
+    <title>通知列表测试</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -39,7 +39,7 @@
 </head>
 
 <body>
-    <h1>家庭数据展示</h1>
+    <h1>通知列表展示</h1>
 
     <!-- 登录信息展示 -->
     <div class="login-info">
@@ -59,7 +59,7 @@
             <div class="filter-row" style="margin-bottom: 15px;">
                 <div class="filter-item" style="width: 100%;">
                     <label for="search_query">搜索：</label>
-                    <input type="text" name="search_query" id="search_query" placeholder="输入户号、房主姓名或联系电话"
+                    <input type="text" name="search_query" id="search_query" placeholder="输入通知标题、内容或发布人"
                         value="{{ search_query|default:'' }}" style="width: 300px; padding: 8px; font-size: 14px;">
                     <button type="submit" class="filter-btn">搜索</button>
                     {% if search_query %}
@@ -69,26 +69,21 @@
             </div>
             <div class="filter-row">
                 <div class="filter-item">
-                    <label for="community">所属社区：</label>
-                    <select name="community" id="community" onchange="updateEstates()">
-                        <option value="" {% if not selected_community %}selected{% endif %}>全部</option>
-                        {% for community in communities %}
-                        <option value="{{ community.id }}" {% if selected_community == community.id|stringformat:'s' %}selected{% endif %}>
-                            {{ community.name }}
-                        </option>
-                        {% endfor %}
+                    <label for="notification_type">通知类型：</label>
+                    <select name="notification_type" id="notification_type">
+                        <option value="" {% if not selected_notification_type %}selected{% endif %}>全部</option>
+                        <option value="1" {% if selected_notification_type == '1' %}selected{% endif %}>紧急</option>
+                        <option value="2" {% if selected_notification_type == '2' %}selected{% endif %}>普通</option>
+                        <option value="3" {% if selected_notification_type == '3' %}selected{% endif %}>活动</option>
                     </select>
                 </div>
 
                 <div class="filter-item">
-                    <label for="estate">所属小区：</label>
-                    <select name="estate" id="estate">
-                        <option value="" {% if not selected_estate %}selected{% endif %}>全部</option>
-                        {% for estate in estates %}
-                        <option value="{{ estate.id }}" {% if selected_estate == estate.id|stringformat:'s' %}selected{% endif %}>
-                            {{ estate.name }}
-                        </option>
-                        {% endfor %}
+                    <label for="is_expired">是否过期：</label>
+                    <select name="is_expired" id="is_expired">
+                        <option value="" {% if not selected_is_expired %}selected{% endif %}>全部</option>
+                        <option value="0" {% if selected_is_expired == '0' %}selected{% endif %}>未过期</option>
+                        <option value="1" {% if selected_is_expired == '1' %}selected{% endif %}>已过期</option>
                     </select>
                 </div>
 
@@ -107,22 +102,32 @@
     <table>
         <tr>
             <th>ID</th>
-            <th>户号</th>
-            <th>房主姓名</th>
-            <th>居住地址</th>
-            <th>联系电话</th>
+            <th>通知类型</th>
+            <th>标题</th>
+            <th>内容</th>
+            <th>发布人</th>
+            <th>发布时间</th>
+            <th>有效期至</th>
+            <th>阅读次数</th>
+            <th>创建时间</th>
             <th>更新时间</th>
             <th>备注</th>
         </tr>
-        {% for family in families %}
+        {% for notification in notifications %}
         <tr>
-            <td>{{ family.id }}</td>
-            <td>{{ family.household_number }}</td>
-            <td>{{ family.owner_name }}</td>
-            <td>{{ family.residential_address|default:"-" }}</td>
-            <td>{{ family.contact_phone|default:"-" }}</td>
-            <td>{{ family.updated_at|date:"Y-m-d H:i:s" }}</td>
-            <td>{{ family.remark|default:"-" }}</td>
+            <td>{{ notification.id }}</td>
+            <td>
+                {% if notification.notification_type == 1 %}紧急{% elif notification.notification_type == 2 %}普通{% elif notification.notification_type == 3 %}活动{% endif %}
+            </td>
+            <td>{{ notification.title }}</td>
+            <td>{{ notification.content|truncatechars:100 }}</td>
+            <td>{{ notification.publisher.username }}</td>
+            <td>{{ notification.publish_time|date:"Y-m-d H:i:s" }}</td>
+            <td>{{ notification.valid_until|date:"Y-m-d H:i:s" }}</td>
+            <td>{{ notification.view_count }}</td>
+            <td>{{ notification.created_at|date:"Y-m-d H:i:s" }}</td>
+            <td>{{ notification.updated_at|date:"Y-m-d H:i:s" }}</td>
+            <td>{{ notification.remark|default:"-" }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -130,12 +135,12 @@
     <!-- 分页控件 -->
     <div class="pagination">
         <h3>分页信息</h3>
-        <p>共 {{ total_families }} 条记录，第 {{ page_number }}/{{ total_pages }} 页</p>
+        <p>共 {{ total_notifications }} 条记录，第 {{ page_number }}/{{ total_pages }} 页</p>
 
         <div class="pagination-controls">
             <!-- 页码导航 -->
             {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}">上一页</a>
+            <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}{% if selected_notification_type %}&notification_type={{ selected_notification_type }}{% endif %}{% if selected_is_expired %}&is_expired={{ selected_is_expired }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}">上一页</a>
             {% endif %}
 
             <!-- 显示页码范围 -->
@@ -143,12 +148,12 @@
             {% if page_obj.number == num %}
             <span class="current-page">{{ num }}</span>
             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} 
-            <a href="?page={{ num }}&page_size={{ page_size }}">{{ num }}</a>
+            <a href="?page={{ num }}&page_size={{ page_size }}{% if selected_notification_type %}&notification_type={{ selected_notification_type }}{% endif %}{% if selected_is_expired %}&is_expired={{ selected_is_expired }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}">{{ num }}</a>
             {% endif %}
             {% endfor %}
 
             {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}">下一页</a>
+            <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}{% if selected_notification_type %}&notification_type={{ selected_notification_type }}{% endif %}{% if selected_is_expired %}&is_expired={{ selected_is_expired }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}">下一页</a>
             {% endif %}
         </div>
 
@@ -175,18 +180,6 @@
             window.location.href = currentUrl.href;
         }
 
-        function updateEstates() {
-            const communityId = document.getElementById('community').value;
-            const estateSelect = document.getElementById('estate');
-            const filterForm = document.getElementById('filter-form');
-            
-            // 清空小区选择框
-            estateSelect.innerHTML = '<option value="">全部</option>';
-            
-            // 直接提交表单进行筛选，不需要等待小区列表更新
-            filterForm.submit();
-        }
-
         function resetFilters() {
             // 重置所有筛选条件，保持当前分页设置
             const currentUrl = new URL(window.location.href);
@@ -201,16 +194,16 @@
             // 清空搜索条件，保持其他筛选条件不变
             const currentUrl = new URL(window.location.href);
             const pageSize = currentUrl.searchParams.get('page_size') || '10';
-            const community = currentUrl.searchParams.get('community') || '';
-            const estate = currentUrl.searchParams.get('estate') || '';
+            const notification_type = currentUrl.searchParams.get('notification_type') || '';
+            const is_expired = currentUrl.searchParams.get('is_expired') || '';
 
             // 构建新的URL，包含分页参数和其他筛选条件，但不包含搜索条件
             let newUrl = `${currentUrl.origin}${currentUrl.pathname}?page=1&page_size=${pageSize}`;
-            if (community) {
-                newUrl += `&community=${community}`;
+            if (notification_type) {
+                newUrl += `&notification_type=${notification_type}`;
             }
-            if (estate) {
-                newUrl += `&estate=${estate}`;
+            if (is_expired) {
+                newUrl += `&is_expired=${is_expired}`;
             }
             window.location.href = newUrl;
         }

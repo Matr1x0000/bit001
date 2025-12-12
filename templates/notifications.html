@@ -8,6 +8,171 @@
 {% block content %}
 <!-- 通知发布 -->
 <section id="notifications" class="page-section">
+  <!-- 发布通知模态框 -->
+  <div id="publish-notification-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden" style="z-index: 1000;">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-semibold text-gray-800">发布通知</h2>
+          <button id="close-modal-btn" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+            <i class="fa fa-times text-xl"></i>
+          </button>
+        </div>
+        
+        <!-- 表单填写进度指示器 -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between text-sm mb-2">
+            <span>表单填写进度</span>
+            <span id="progress-text" class="text-primary font-medium">0%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div id="progress-bar" class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+          </div>
+        </div>
+        
+        <!-- 发布通知表单 -->
+        <form id="publish-notification-form" class="space-y-6">
+          {% csrf_token %}
+          
+          <!-- 标题输入框 -->
+          <div class="form-group">
+            <label for="notification-title" class="block text-sm font-medium text-gray-700 mb-1">通知标题 <span class="text-red-500">*</span></label>
+            <input type="text" id="notification-title" name="title" 
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" 
+                   placeholder="请输入通知标题" required minlength="5" maxlength="100">
+            <div id="title-error" class="text-red-500 text-xs mt-1 hidden">标题长度应在5-100字符之间</div>
+            <div class="text-right text-xs text-gray-500 mt-1">
+              <span id="title-count">0</span>/100
+            </div>
+          </div>
+          
+          <!-- 内容编辑区域 -->
+          <div class="form-group">
+            <label for="notification-content" class="block text-sm font-medium text-gray-700 mb-1">通知内容 <span class="text-red-500">*</span></label>
+            <textarea id="notification-content" name="content" 
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm min-h-[150px]" 
+                      placeholder="请输入通知内容" required></textarea>
+            <div id="content-error" class="text-red-500 text-xs mt-1 hidden">内容不能为空</div>
+            <div class="text-right text-xs text-gray-500 mt-1">
+              <span id="content-count">0</span> 字符
+            </div>
+          </div>
+          
+          <!-- 类型选择组件 -->
+          <div class="form-group">
+            <label class="block text-sm font-medium text-gray-700 mb-1">通知类型 <span class="text-red-500">*</span></label>
+            <div class="flex flex-wrap gap-4">
+              <label class="inline-flex items-center cursor-pointer">
+                <input type="radio" name="notification_type" value="1" class="form-radio text-primary" required>
+                <span class="ml-2 text-sm text-gray-700">紧急</span>
+              </label>
+              <label class="inline-flex items-center cursor-pointer">
+                <input type="radio" name="notification_type" value="2" class="form-radio text-primary" required checked>
+                <span class="ml-2 text-sm text-gray-700">普通</span>
+              </label>
+              <label class="inline-flex items-center cursor-pointer">
+                <input type="radio" name="notification_type" value="3" class="form-radio text-primary" required>
+                <span class="ml-2 text-sm text-gray-700">活动</span>
+              </label>
+            </div>
+            <div id="type-error" class="text-red-500 text-xs mt-1 hidden">请选择通知类型</div>
+          </div>
+          
+          <!-- 截止日期选择器 -->
+          <div class="form-group">
+            <label class="block text-sm font-medium text-gray-700 mb-1">有效期设置 <span class="text-red-500">*</span></label>
+            <div class="flex flex-wrap gap-4 mb-3">
+              <label class="inline-flex items-center cursor-pointer">
+                <input type="radio" name="notification_time_type" value="1" class="form-radio text-primary" required checked>
+                <span class="ml-2 text-sm text-gray-700">长期有效</span>
+              </label>
+              <label class="inline-flex items-center cursor-pointer">
+                <input type="radio" name="notification_time_type" value="2" class="form-radio text-primary" required>
+                <span class="ml-2 text-sm text-gray-700">定期有效</span>
+              </label>
+            </div>
+            <div id="valid-until-container" class="hidden">
+              <input type="datetime-local" id="valid-until" name="valid_until" 
+                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+              <div id="valid-until-error" class="text-red-500 text-xs mt-1 hidden">请选择当前时间或未来时间</div>
+            </div>
+          </div>
+          
+          <!-- 备注输入框 -->
+          <div class="form-group">
+            <label for="notification-remark" class="block text-sm font-medium text-gray-700 mb-1">备注 <span class="text-red-500">*</span></label>
+            <textarea id="notification-remark" name="remark" 
+                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm h-24" 
+                      placeholder="请输入备注信息" required maxlength="500"></textarea>
+            <div id="remark-error" class="text-red-500 text-xs mt-1 hidden">备注不能为空</div>
+            <div class="text-right text-xs text-gray-500 mt-1">
+              <span id="remark-count">0</span>/500
+            </div>
+          </div>
+          
+          <!-- 发布时间字段 -->
+          <div class="form-group">
+            <label for="publish-time" class="block text-sm font-medium text-gray-700 mb-1">发布时间</label>
+            <input type="text" id="publish-time" name="publish_time" 
+                   class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed text-gray-600" 
+                   readonly>
+          </div>
+          
+          <!-- 发布人字段 -->
+          <div class="form-group">
+            <label class="block text-sm font-medium text-gray-700 mb-1">发布人</label>
+            <div class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
+              <i class="fa fa-user text-gray-500"></i>
+              <span id="publisher-info">{{ user.username }}</span>
+              <input type="hidden" name="publisher" value="{{ user.id }}">
+            </div>
+          </div>
+          
+          <!-- 附件上传 -->
+          <div class="form-group">
+            <label for="notification-attachments" class="block text-sm font-medium text-gray-700 mb-1">附件上传</label>
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-primary transition-colors">
+              <input type="file" id="notification-attachments" name="attachments" multiple 
+                     class="hidden">
+              <label for="notification-attachments" class="cursor-pointer">
+                <i class="fa fa-upload text-2xl text-gray-400 mb-2"></i>
+                <p class="text-sm text-gray-600">点击或拖拽文件到此处上传</p>
+                <p class="text-xs text-gray-500 mt-1">支持多个文件上传</p>
+              </label>
+              <div id="file-list" class="mt-4 space-y-2 hidden"></div>
+            </div>
+          </div>
+          
+          <!-- 表单操作按钮 -->
+          <div class="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+            <button type="submit" id="submit-notification-btn" 
+                    class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+              <i class="fa fa-paper-plane mr-2"></i> 发布通知
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+
+  
+  <!-- 成功提示 -->
+  <div id="success-toast" class="fixed inset-0 flex items-center justify-center z-50 pointer-events-none transition-all duration-300 opacity-0">
+    <div class="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
+      <i class="fa fa-check-circle text-xl"></i>
+      <span id="success-message"></span>
+    </div>
+  </div>
+  
+  <!-- 错误提示 -->
+  <div id="error-toast" class="fixed inset-0 flex items-center justify-center z-50 pointer-events-none transition-all duration-300 opacity-0">
+    <div class="bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
+      <i class="fa fa-exclamation-circle text-xl"></i>
+      <span id="error-message"></span>
+    </div>
+  </div>
+  
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- 左侧：通知列表 -->
     <div class="lg:col-span-1">
@@ -41,165 +206,116 @@
 
         <!-- 通知列表 -->
         <div class="space-y-4 max-h-[600px] overflow-y-auto">
-          <!-- 通知项 1 -->
-          <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer bg-blue-50 border-blue-200"
-            data-notification-id="1" data-title="停水通知" data-type="紧急" data-content="尊敬的各位居民：
-为保障小区供水设施的安全稳定运行，物业将于2023年6月20日进行水管维修工作。具体安排如下：
-- 停水时间：6月20日 9:00 - 15:00
-- 影响范围：1号楼、2号楼、3号楼
-- 恢复供水：6月20日 15:00后逐步恢复
-
-请各位居民提前做好储水准备，给您的生活带来不便，敬请谅解！
-
-如有疑问，请联系物业客服：021-12345678
-
-社区物业服务中心
-2023年6月18日" data-date="2023-06-18 08:30" data-valid-until="2023-06-20 15:00" data-total="248" data-read="128"
-            data-unread="120">
+          {% for notification in notifications %}
+          <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+            data-notification-id="{{ notification.id }}" 
+            data-title="{{ notification.title }}" 
+            data-type="{% if notification.notification_type == 1 %}紧急{% elif notification.notification_type == 2 %}普通{% elif notification.notification_type == 3 %}活动{% endif %}" 
+            data-content="{{ notification.content }}" 
+            data-date="{{ notification.publish_time|date:'Y-m-d H:i:s' }}" 
+            data-valid-until="{{ notification.valid_until|date:'Y-m-d H:i:s' }}" 
+            data-publisher="{{ notification.publisher.username }}" 
+            data-total="{{ notification.view_count }}" 
+            data-remark="{{ notification.remark|default:'' }}" 
+            data-is-read="{% if notification.id in user_read_notifications %}true{% else %}false{% endif %}">
             <div class="flex items-start">
               <div class="flex-shrink-0">
-                <span class="inline-block w-2 h-2 bg-red-500 rounded-full mt-2"></span>
               </div>
-              <div class="ml-3 flex-1">
+              <div class="ml-0 flex-1">
                 <div class="flex items-center justify-between">
-                  <h4 class="text-sm font-medium text-gray-900">停水通知</h4>
-                  <span class="text-xs text-gray-500">今天 08:30</span>
+                  <h4 class="text-sm font-medium text-gray-900">{{ notification.title }}</h4>
+                  <span class="text-xs text-gray-500">{{ notification.publish_time|date:'Y-m-d H:i' }}</span>
                 </div>
-                <p class="text-xs text-gray-600 mt-1 line-clamp-2">6月20日9:00-15:00将进行水管维修，请提前做好储水准备。</p>
+                <p class="text-xs text-gray-600 mt-1 line-clamp-2">{{ notification.content|truncatechars:100 }}</p>
                 <div class="flex items-center justify-between mt-2">
-                  <span class="px-2 py-0.5 bg-red-100 text-red-800 text-xs font-medium rounded-full">紧急</span>
-                  <div class="flex items-center text-xs text-gray-500">
-                    <span class="mr-3"><i class="fa fa-eye mr-1"></i> 128</span>
-                    <span><i class="fa fa-check-circle mr-1"></i> 已读</span>
+                  <span class="px-2 py-0.5 
+                    {% if notification.notification_type == 1 %}bg-red-500 text-white{% elif notification.notification_type == 2 %}bg-green-500 text-white{% elif notification.notification_type == 3 %}bg-blue-500 text-white{% endif %} 
+                    text-xs font-medium rounded-full shadow-sm">
+                    {% if notification.notification_type == 1 %}紧急{% elif notification.notification_type == 2 %}普通{% elif notification.notification_type == 3 %}活动{% endif %}
+                  </span>
+                  <div class="flex items-center text-xs">
+                    <span class="mr-3 text-gray-500"><i class="fa fa-eye mr-1"></i> {{ notification.view_count }}</span>
+                    {% if notification.view_count > 0 %}
+                    <span class="text-green-600"><i class="fa fa-check-circle mr-1"></i> 已读</span>
+                    {% else %}
+                    <span class="text-red-600"><i class="fa fa-times-circle mr-1"></i> 未读</span>
+                    {% endif %}
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
-          <!-- 通知项 2 -->
-          <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer" data-notification-id="2"
-            data-title="社区活动通知" data-type="活动" data-content="尊敬的各位居民：
-为加强邻里之间的交流与沟通，增进邻里感情，社区将于2023年6月25日举办" 邻里节"活动，具体安排如下： - 活动时间：6月25日 14:00-17:00 - 活动地点：小区中心花园 - 活动内容：文艺表演、趣味游戏、美食分享等
-            欢迎各位居民踊跃参加，共度美好时光！ 社区居委会 2023年6月19日" data-date="2023-06-19 16:45" data-valid-until="2023-06-25 17:00"
-            data-total="248" data-read="162" data-unread="86">
-            <div class="flex items-start">
-              <div class="flex-shrink-0">
-                <span class="inline-block w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
-              </div>
-              <div class="ml-3 flex-1">
-                <div class="flex items-center justify-between">
-                  <h4 class="text-sm font-medium text-gray-900">社区活动通知</h4>
-                  <span class="text-xs text-gray-500">昨天 16:45</span>
-                </div>
-                <p class="text-xs text-gray-600 mt-1 line-clamp-2">6月25日将举办"邻里节"活动，欢迎各位居民参加。</p>
-                <div class="flex items-center justify-between mt-2">
-                  <span class="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">活动</span>
-                  <div class="flex items-center text-xs text-gray-500">
-                    <span class="mr-3"><i class="fa fa-eye mr-1"></i> 162</span>
-                    <span><i class="fa fa-check-circle mr-1"></i> 已读</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {% endfor %}
+          {% if not notifications %}
+          <div class="text-center py-8 text-gray-500">
+            <i class="fa fa-inbox text-4xl mb-2"></i>
+            <p>暂无通知</p>
           </div>
-
-          <!-- 通知项 3 -->
-          <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer" data-notification-id="3"
-            data-title="垃圾分类表彰" data-type="普通" data-content="尊敬的各位居民：
-经过上月的垃圾分类评比，1号楼和3号楼在垃圾分类工作中表现突出，获得" 优秀楼栋"称号。 优秀楼栋名单： - 1号楼：平均正确率98% - 3号楼：平均正确率96% 恭喜以上楼栋的居民！希望大家继续保持，共同维护小区环境。 社区居委会
-            2023年6月15日" data-date="2023-06-15 10:20" data-valid-until="2023-07-15 23:59" data-total="248"
-            data-read="248" data-unread="0">
-            <div class="flex items-start">
-              <div class="flex-shrink-0">
-                <span class="inline-block w-2 h-2 bg-green-500 rounded-full mt-2"></span>
-              </div>
-              <div class="ml-3 flex-1">
-                <div class="flex items-center justify-between">
-                  <h4 class="text-sm font-medium text-gray-900">垃圾分类表彰</h4>
-                  <span class="text-xs text-gray-500">6月15日 10:20</span>
-                </div>
-                <p class="text-xs text-gray-600 mt-1 line-clamp-2">恭喜1号楼、3号楼获得上月垃圾分类优秀楼栋。</p>
-                <div class="flex items-center justify-between mt-2">
-                  <span class="px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full">普通</span>
-                  <div class="flex items-center text-xs text-gray-500">
-                    <span class="mr-3"><i class="fa fa-eye mr-1"></i> 248</span>
-                    <span><i class="fa fa-check-circle mr-1"></i> 已读</span>
-                  </div>
-                </div>
-              </div>
+          {% endif %}
+        </div>
+        
+        <!-- 分页控件 -->
+        <div class="pagination mt-6">
+          <div class="flex items-center justify-between">
+            <p class="text-sm text-gray-500">共 {{ total_notifications }} 条记录，第 {{ page_number }}/{{ total_pages }} 页</p>
+            <div class="flex items-center space-x-1">
+              {% if page_obj.has_previous %}
+              <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}{% if search_query %}&search_query={{ search_query }}{% endif %}{% if selected_notification_type %}&notification_type={{ selected_notification_type }}{% endif %}{% if selected_is_expired %}&is_expired={{ selected_is_expired }}{% endif %}" 
+                 class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                <i class="fa fa-chevron-left"></i>
+              </a>
+              {% else %}
+              <span class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-400 cursor-not-allowed">
+                <i class="fa fa-chevron-left"></i>
+              </span>
+              {% endif %}
+              
+              <!-- 页码范围 -->
+              {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+              <span class="px-3 py-1 border border-primary bg-primary text-white rounded-md text-sm">
+                {{ num }}
+              </span>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <a href="?page={{ num }}&page_size={{ page_size }}{% if search_query %}&search_query={{ search_query }}{% endif %}{% if selected_notification_type %}&notification_type={{ selected_notification_type }}{% endif %}{% if selected_is_expired %}&is_expired={{ selected_is_expired }}{% endif %}" 
+                 class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                {{ num }}
+              </a>
+              {% endif %}
+              {% endfor %}
+              
+              {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}{% if search_query %}&search_query={{ search_query }}{% endif %}{% if selected_notification_type %}&notification_type={{ selected_notification_type }}{% endif %}{% if selected_is_expired %}&is_expired={{ selected_is_expired }}{% endif %}" 
+                 class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                <i class="fa fa-chevron-right"></i>
+              </a>
+              {% else %}
+              <span class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-400 cursor-not-allowed">
+                <i class="fa fa-chevron-right"></i>
+              </span>
+              {% endif %}
             </div>
-          </div>
-
-          <!-- 通知项 4 -->
-          <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer" data-notification-id="4"
-            data-title="端午节放假通知" data-type="普通" data-content="尊敬的各位居民：
-根据国家法定节假日安排，2023年端午节放假调休安排如下：
-- 放假时间：6月22日至24日放假调休，共3天
-- 上班时间：6月25日（星期日）正常上班
-
-请各位居民合理安排假期生活，注意安全。
-
-社区居委会
-2023年6月10日" data-date="2023-06-10 14:30" data-valid-until="2023-06-24 23:59" data-total="248" data-read="248"
-            data-unread="0">
-            <div class="flex items-start">
-              <div class="flex-shrink-0">
-                <span class="inline-block w-2 h-2 bg-yellow-500 rounded-full mt-2"></span>
-              </div>
-              <div class="ml-3 flex-1">
-                <div class="flex items-center justify-between">
-                  <h4 class="text-sm font-medium text-gray-900">端午节放假通知</h4>
-                  <span class="text-xs text-gray-500">6月10日 14:30</span>
-                </div>
-                <p class="text-xs text-gray-600 mt-1 line-clamp-2">根据国家法定节假日安排，6月22日至24日放假调休，共3天。</p>
-                <div class="flex items-center justify-between mt-2">
-                  <span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">普通</span>
-                  <div class="flex items-center text-xs text-gray-500">
-                    <span class="mr-3"><i class="fa fa-eye mr-1"></i> 248</span>
-                    <span><i class="fa fa-check-circle mr-1"></i> 已读</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 通知项 5 -->
-          <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer" data-notification-id="5"
-            data-title="停电通知" data-type="紧急" data-content="尊敬的各位居民：
-为保障小区电力设施的安全稳定运行，供电部门将于2023年6月15日进行电力设施检修，期间将暂停供电。具体安排如下：
-- 停电时间：6月15日 6:00-18:00
-- 影响范围：整个小区
-- 恢复供电：6月15日 18:00后逐步恢复
-
-请各位居民提前做好准备，关闭不必要的电器设备，给您的生活带来不便，敬请谅解！
-
-如有疑问，请联系物业客服：021-12345678
-
-社区物业服务中心
-2023年6月5日" data-date="2023-06-05 09:15" data-valid-until="2023-06-15 18:00" data-total="248" data-read="248"
-            data-unread="0">
-            <div class="flex items-start">
-              <div class="flex-shrink-0">
-                <span class="inline-block w-2 h-2 bg-red-500 rounded-full mt-2"></span>
-              </div>
-              <div class="ml-3 flex-1">
-                <div class="flex items-center justify-between">
-                  <h4 class="text-sm font-medium text-gray-900">停电通知</h4>
-                  <span class="text-xs text-gray-500">6月5日 09:15</span>
-                </div>
-                <p class="text-xs text-gray-600 mt-1 line-clamp-2">6月15日6:00-18:00将进行电力设施检修，期间将暂停供电。</p>
-                <div class="flex items-center justify-between mt-2">
-                  <span class="px-2 py-0.5 bg-red-100 text-red-800 text-xs font-medium rounded-full">紧急</span>
-                  <div class="flex items-center text-xs text-gray-500">
-                    <span class="mr-3"><i class="fa fa-eye mr-1"></i> 248</span>
-                    <span><i class="fa fa-check-circle mr-1"></i> 已读</span>
-                  </div>
-                </div>
-              </div>
+            <div class="flex items-center">
+              <label for="page_size" class="text-sm text-gray-500 mr-2">每页：</label>
+              <select id="page_size" onchange="changePageSize()" class="px-2 py-1 border border-gray-300 rounded-md text-sm">
+                <option value="5" {% if page_size == '5' %}selected{% endif %}>5</option>
+                <option value="10" {% if page_size == '10' %}selected{% endif %}>10</option>
+                <option value="20" {% if page_size == '20' %}selected{% endif %}>20</option>
+                <option value="50" {% if page_size == '50' %}selected{% endif %}>50</option>
+              </select>
             </div>
           </div>
         </div>
+        
+        <script>
+          function changePageSize() {
+            const pageSize = document.getElementById('page_size').value;
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('page', '1');
+            currentUrl.searchParams.set('page_size', pageSize);
+            window.location.href = currentUrl.href;
+          }
+        </script>
       </div>
     </div>
 
@@ -222,10 +338,10 @@
 
         <!-- 通知详情 -->
         <div class="border-b border-gray-200 pb-6 mb-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 id="notification-detail-title" class="text-lg font-semibold text-gray-900">停水通知</h3>
+          <div class="flex items-center gap-2 mb-4">
             <span id="notification-detail-type"
-              class="px-2 py-0.5 bg-red-100 text-red-800 text-xs font-medium rounded-full">紧急</span>
+              class="px-2 py-0.5 bg-red-500 text-white text-xs font-medium rounded-full shadow-sm">紧急</span>
+            <h3 id="notification-detail-title" class="text-lg font-semibold text-gray-900">停水通知</h3>
           </div>
           <div class="flex items-center text-sm text-gray-500 mb-4">
             <span id="notification-detail-author" class="mr-4"><i class="fa fa-user mr-1"></i> 管理员</span>
@@ -244,6 +360,24 @@
             <p class="text-gray-700 mt-2">如有疑问，请联系物业客服：021-12345678</p>
             <p class="text-gray-700 mt-2">社区物业服务中心</p>
             <p class="text-gray-700 mt-1">2023年6月18日</p>
+          </div>
+          
+          <!-- 备注信息 -->
+          <div class="mt-6">
+            <hr class="border-gray-200 mb-4">
+            <div class="text-sm">
+              <span class="font-medium text-gray-700">备注：</span>
+              <span id="notification-detail-remark" class="text-gray-600">无备注</span>
+            </div>
+          </div>
+          
+          <!-- 附件展示区域 -->
+          <div id="notification-attachments" class="mt-6">
+            <h4 class="text-sm font-medium text-gray-700 mb-3">附件</h4>
+            <div id="attachments-list" class="space-y-3">
+              <!-- 附件列表将通过JavaScript动态生成 -->
+              <div class="text-gray-500">无附件</div>
+            </div>
           </div>
         </div>
 

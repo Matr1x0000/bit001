@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑家庭信息</title>
+    <style>
+        /* 基础样式 */
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        
+        /* 容器样式 */
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 标题样式 */
+        h1 {
+            text-align: center;
+            color: #1890ff;
+            margin-bottom: 30px;
+        }
+        
+        /* 表单容器 */
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        /* 表单行 */
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        /* 表单组 */
+        .form-group {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        /* 标签样式 */
+        .form-group label {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        /* 输入框样式 */
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 8px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        /* 输入框聚焦样式 */
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1890ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+        
+        /* 按钮容器 */
+        .button-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        /* 按钮样式 */
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        /* 提交按钮 */
+        .submit-btn {
+            background-color: #1890ff;
+            color: white;
+        }
+        
+        /* 提交按钮悬停 */
+        .submit-btn:hover {
+            background-color: #40a9ff;
+        }
+        
+        /* 取消按钮 */
+        .cancel-btn {
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        /* 取消按钮悬停 */
+        .cancel-btn:hover {
+            background-color: #e8e8e8;
+        }
+        
+        /* 地址类型选择 */
+        .address-type {
+            margin-bottom: 20px;
+        }
+        
+        /* 地址选择区域 */
+        .address-selection {
+            background-color: #fafafa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        /* 隐藏元素 */
+        .hidden {
+            display: none;
+        }
+        
+        /* 提示信息 */
+        .error-message {
+            color: #ff4d4f;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        /* 成功信息 */
+        .success-message {
+            color: #52c41a;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        /* 返回链接 */
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #1890ff;
+            text-decoration: none;
+        }
+        
+        /* 返回链接悬停 */
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>编辑家庭信息</h1>
+        
+        <!-- 提示信息 -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <a href="{% url 'test' %}" class="back-link">返回列表</a>
+        
+        <form method="POST" action="" class="form-container">
+            {% csrf_token %}
+            
+            <!-- 基本信息 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="household_number">户号 *</label>
+                    <input type="text" name="household_number" id="household_number" value="{{ family.household_number }}" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="owner_name">房主姓名 *</label>
+                    <input type="text" name="owner_name" id="owner_name" value="{{ family.owner_name }}" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="contact_phone">联系电话</label>
+                    <input type="tel" name="contact_phone" id="contact_phone" value="{{ family.contact_phone }}">
+                </div>
+            </div>
+            
+            <!-- 地址信息 -->
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="address_type">地址类型</label>
+                    <select name="address_type" id="address_type" onchange="updateAddressFields()">
+                        <option value="">请选择地址类型</option>
+                        <option value="1" {% if family.residential_address and family.residential_address.address_type == 1 %}selected{% endif %}>楼房</option>
+                        <option value="2" {% if family.residential_address and family.residential_address.address_type == 2 %}selected{% endif %}>平房</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="address-selection">
+                <!-- 社区选择 -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="community">所属社区</label>
+                        <select name="community" id="community" onchange="updateEstatesAndHutongs()">
+                            <option value="">请选择社区</option>
+                            {% for community in communities %}
+                                <option value="{{ community.id }}" {% if family.residential_address %}{% if family.residential_address.address_type == 1 and family.residential_address.estate.community.id == community.id %}selected{% elif family.residential_address.address_type == 2 and family.residential_address.hutong.community.id == community.id %}selected{% endif %}{% endif %}>{{ community.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- 楼房地址信息 -->
+                <div id="building-address" class="building-address" style="display: {% if family.residential_address and family.residential_address.address_type == 1 %}block{% else %}none{% endif %};">
+                    <h3>楼房地址</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="estate">所属小区</label>
+                            <select name="estate" id="estate" onchange="updateBuildings()">
+                                <option value="">请选择小区</option>
+                                {% if family.residential_address and family.residential_address.address_type == 1 %}
+                                    {% for estate in family.residential_address.estate.community.housingestate_set.all %}
+                                        <option value="{{ estate.id }}" {% if family.residential_address.estate_id == estate.id %}selected{% endif %}>{{ estate.name }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="building">楼号</label>
+                            <select name="building" id="building" onchange="updateUnits()">
+                                <option value="">请选择楼号</option>
+                                {% if family.residential_address and family.residential_address.address_type == 1 %}
+                                    {% for building in family.residential_address.estate.building_set.all %}
+                                        <option value="{{ building.id }}" {% if family.residential_address.building_id == building.id %}selected{% endif %}>{{ building.name }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="unit">单元</label>
+                            <select name="unit" id="unit" onchange="updateApartments()">
+                                <option value="">请选择单元</option>
+                                {% if family.residential_address and family.residential_address.address_type == 1 %}
+                                    {% for unit in family.residential_address.building.unit_set.all %}
+                                        <option value="{{ unit.id }}" {% if family.residential_address.unit_id == unit.id %}selected{% endif %}>{{ unit.name }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="apartment">房号</label>
+                            <select name="apartment" id="apartment">
+                                <option value="">请选择房号</option>
+                                {% if family.residential_address and family.residential_address.address_type == 1 %}
+                                    {% for apartment in family.residential_address.unit.apartment_set.all %}
+                                        <option value="{{ apartment.id }}" {% if family.residential_address.apartment_id == apartment.id %}selected{% endif %}>{{ apartment.house_number }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 平房地址信息 -->
+                <div id="hutong-address" class="hutong-address" style="display: {% if family.residential_address and family.residential_address.address_type == 2 %}block{% else %}none{% endif %};">
+                    <h3>平房地址</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hutong">所属胡同</label>
+                            <select name="hutong" id="hutong" onchange="updateSingleHouses()">
+                                <option value="">请选择胡同</option>
+                                {% if family.residential_address and family.residential_address.address_type == 2 %}
+                                    {% for hutong in family.residential_address.hutong.community.hutong_set.all %}
+                                        <option value="{{ hutong.id }}" {% if family.residential_address.hutong_id == hutong.id %}selected{% endif %}>{{ hutong.name }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="single_house">房号</label>
+                            <select name="single_house" id="single_house">
+                                <option value="">请选择房号</option>
+                                {% if family.residential_address and family.residential_address.address_type == 2 %}
+                                    {% for single_house in family.residential_address.hutong.singlehouse_set.all %}
+                                        <option value="{{ single_house.id }}" {% if family.residential_address.single_house_id == single_house.id %}selected{% endif %}>{{ single_house.house_number }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="remark">备注</label>
+                    <textarea name="remark" id="remark" rows="3">{{ family.remark }}</textarea>
+                </div>
+            </div>
+            
+            <div class="button-container">
+                <button type="submit" class="submit-btn">保存更改</button>
+                <button type="button" class="cancel-btn" onclick="window.history.back()">取消</button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        // 更新地址字段显示
+        function updateAddressFields() {
+            const addressTypeSelect = document.getElementById('address_type');
+            const buildingAddress = document.getElementById('building-address');
+            const hutongAddress = document.getElementById('hutong-address');
+            
+            // 隐藏所有地址类型字段
+            buildingAddress.style.display = 'none';
+            hutongAddress.style.display = 'none';
+            
+            // 获取地址类型值
+            let addressType = addressTypeSelect.value;
+            
+            // 根据选择的地址类型显示对应的字段
+            if (addressType === '1') {
+                buildingAddress.style.display = 'block';
+                hutongAddress.style.display = 'none';
+            } else if (addressType === '2') {
+                buildingAddress.style.display = 'none';
+                hutongAddress.style.display = 'block';
+            }
+        }
+        
+        // 通用函数：获取所有分页数据
+        function fetchAllData(url, callback) {
+            let allData = [];
+            
+            function fetchPage(pageUrl) {
+                fetch(pageUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        allData = allData.concat(data.results || []);
+                        
+                        // 如果有下一页，继续获取
+                        if (data.next) {
+                            fetchPage(data.next);
+                        } else {
+                            // 所有数据获取完成，调用回调函数
+                            callback(allData);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('获取数据失败:', error);
+                        callback([]);
+                    });
+            }
+            
+            fetchPage(url);
+        }
+        
+        // 更新小区和胡同列表
+        function updateEstatesAndHutongs() {
+            const communityId = document.getElementById('community').value;
+            const estateSelect = document.getElementById('estate');
+            const hutongSelect = document.getElementById('hutong');
+            
+            // 清空现有选项
+            estateSelect.innerHTML = '<option value="">请选择小区</option>';
+            hutongSelect.innerHTML = '<option value="">请选择胡同</option>';
+            
+            // 清空依赖的字段
+            document.getElementById('building').innerHTML = '<option value="">请选择楼号</option>';
+            document.getElementById('unit').innerHTML = '<option value="">请选择单元</option>';
+            document.getElementById('apartment').innerHTML = '<option value="">请选择房号</option>';
+            document.getElementById('single_house').innerHTML = '<option value="">请选择房号</option>';
+            
+            if (communityId) {
+                // 获取小区列表
+                fetchAllData(`/api/housing-estates/?community=${communityId}`, function(estates) {
+                    let hasSelectedEstate = false;
+                    
+                    estates.forEach(estate => {
+                        const option = document.createElement('option');
+                        option.value = estate.id;
+                        option.textContent = estate.name;
+                        
+                        // 如果是当前家庭的小区，选中它
+                        {% if family.residential_address and family.residential_address.address_type == 1 %}
+                            if (parseInt(estate.id) === {{ family.residential_address.estate_id }}) {
+                                option.selected = true;
+                                hasSelectedEstate = true;
+                            }
+                        {% endif %}
+                        
+                        estateSelect.appendChild(option);
+                    });
+                    
+                    // 如果选中了小区，自动加载楼栋数据
+                    if (hasSelectedEstate) {
+                        updateBuildings();
+                    }
+                });
+                
+                // 获取胡同列表
+                fetchAllData(`/api/hutongs/?community=${communityId}`, function(hutongs) {
+                    let hasSelectedHutong = false;
+                    
+                    hutongs.forEach(hutong => {
+                        const option = document.createElement('option');
+                        option.value = hutong.id;
+                        option.textContent = hutong.name;
+                        
+                        // 如果是当前家庭的胡同，选中它
+                        {% if family.residential_address and family.residential_address.address_type == 2 %}
+                            if (parseInt(hutong.id) === {{ family.residential_address.hutong_id }}) {
+                                option.selected = true;
+                                hasSelectedHutong = true;
+                            }
+                        {% endif %}
+                        
+                        hutongSelect.appendChild(option);
+                    });
+                    
+                    // 如果选中了胡同，自动加载平房数据
+                    if (hasSelectedHutong) {
+                        updateSingleHouses();
+                    }
+                });
+            }
+        }
+        
+        // 确保小区选择框的onchange事件始终能正确触发
+        document.addEventListener('DOMContentLoaded', function() {
+            const estateSelect = document.getElementById('estate');
+            if (estateSelect) {
+                // 移除现有的onchange事件监听器
+                estateSelect.removeAttribute('onchange');
+                
+                // 添加新的事件监听器，确保每次选择都能触发updateBuildings
+                estateSelect.addEventListener('change', function() {
+                    updateBuildings();
+                });
+            }
+            
+            // 确保楼栋选择框的onchange事件始终能正确触发
+            const buildingSelect = document.getElementById('building');
+            if (buildingSelect) {
+                // 移除现有的onchange事件监听器
+                buildingSelect.removeAttribute('onchange');
+                
+                // 添加新的事件监听器，确保每次选择都能触发updateUnits
+                buildingSelect.addEventListener('change', function() {
+                    updateUnits();
+                });
+            }
+            
+            // 确保胡同选择框的onchange事件始终能正确触发
+            const hutongSelect = document.getElementById('hutong');
+            if (hutongSelect) {
+                // 移除现有的onchange事件监听器
+                hutongSelect.removeAttribute('onchange');
+                
+                // 添加新的事件监听器，确保每次选择都能触发updateSingleHouses
+                hutongSelect.addEventListener('change', function() {
+                    updateSingleHouses();
+                });
+            }
+        });
+        
+        // 更新楼栋列表
+        function updateBuildings() {
+            const estateId = document.getElementById('estate').value;
+            const buildingSelect = document.getElementById('building');
+            
+            // 清空现有选项
+            buildingSelect.innerHTML = '<option value="">请选择楼号</option>';
+            
+            // 清空依赖的字段
+            document.getElementById('unit').innerHTML = '<option value="">请选择单元</option>';
+            document.getElementById('apartment').innerHTML = '<option value="">请选择房号</option>';
+            
+            if (estateId) {
+                fetchAllData(`/api/buildings/?estate=${estateId}`, function(buildings) {
+                    let hasSelectedBuilding = false;
+                    
+                    buildings.forEach(building => {
+                        const option = document.createElement('option');
+                        option.value = building.id;
+                        option.textContent = building.name;
+                        
+                        // 如果是当前家庭的楼栋，选中它
+                        {% if family.residential_address and family.residential_address.address_type == 1 %}
+                            if (parseInt(building.id) === {{ family.residential_address.building_id }}) {
+                                option.selected = true;
+                                hasSelectedBuilding = true;
+                            }
+                        {% endif %}
+                        
+                        buildingSelect.appendChild(option);
+                    });
+                    
+                    // 如果选中了楼栋，自动加载单元数据
+                    if (hasSelectedBuilding) {
+                        updateUnits();
+                    }
+                });
+            }
+        }
+        
+        // 更新单元列表
+        function updateUnits() {
+            const buildingId = document.getElementById('building').value;
+            const unitSelect = document.getElementById('unit');
+            
+            // 清空现有选项
+            unitSelect.innerHTML = '<option value="">请选择单元</option>';
+            
+            // 清空依赖的字段
+            document.getElementById('apartment').innerHTML = '<option value="">请选择房号</option>';
+            
+            if (buildingId) {
+                fetchAllData(`/api/units/?building=${buildingId}`, function(units) {
+                    let hasSelectedUnit = false;
+                    
+                    units.forEach(unit => {
+                        const option = document.createElement('option');
+                        option.value = unit.id;
+                        option.textContent = unit.name;
+                        
+                        // 如果是当前家庭的单元，选中它
+                        {% if family.residential_address and family.residential_address.address_type == 1 %}
+                            if (parseInt(unit.id) === {{ family.residential_address.unit_id }}) {
+                                option.selected = true;
+                                hasSelectedUnit = true;
+                            }
+                        {% endif %}
+                        
+                        unitSelect.appendChild(option);
+                    });
+                    
+                    // 如果选中了单元，自动加载房号数据
+                    if (hasSelectedUnit) {
+                        updateApartments();
+                    }
+                });
+            }
+        }
+        
+        // 确保单元选择框的onchange事件始终能正确触发
+        document.addEventListener('DOMContentLoaded', function() {
+            const unitSelect = document.getElementById('unit');
+            if (unitSelect) {
+                // 移除现有的onchange事件监听器
+                unitSelect.removeAttribute('onchange');
+                
+                // 添加新的事件监听器，确保每次选择都能触发updateApartments
+                unitSelect.addEventListener('change', function() {
+                    updateApartments();
+                });
+            }
+        });
+        
+        // 更新公寓列表
+        function updateApartments() {
+            const unitId = document.getElementById('unit').value;
+            const apartmentSelect = document.getElementById('apartment');
+            
+            // 清空现有选项
+            apartmentSelect.innerHTML = '<option value="">请选择房号</option>';
+            
+            if (unitId) {
+                fetchAllData(`/api/apartments/?unit=${unitId}`, function(apartments) {
+                    apartments.forEach(apartment => {
+                        const option = document.createElement('option');
+                        option.value = apartment.id;
+                        option.textContent = apartment.house_number;
+                        
+                        // 如果是当前家庭的房号，选中它
+                        {% if family.residential_address and family.residential_address.address_type == 1 %}
+                            if (parseInt(apartment.id) === {{ family.residential_address.apartment_id }}) {
+                                option.selected = true;
+                            }
+                        {% endif %}
+                        
+                        apartmentSelect.appendChild(option);
+                    });
+                });
+            }
+        }
+        
+        // 更新平房列表
+        function updateSingleHouses() {
+            const hutongId = document.getElementById('hutong').value;
+            const singleHouseSelect = document.getElementById('single_house');
+            
+            // 清空现有选项
+            singleHouseSelect.innerHTML = '<option value="">请选择房号</option>';
+            
+            if (hutongId) {
+                fetchAllData(`/api/single-houses/?hutong=${hutongId}`, function(singleHouses) {
+                    singleHouses.forEach(singleHouse => {
+                        const option = document.createElement('option');
+                        option.value = singleHouse.id;
+                        option.textContent = singleHouse.house_number;
+                        
+                        // 如果是当前家庭的平房，选中它
+                        {% if family.residential_address and family.residential_address.address_type == 2 %}
+                            if (parseInt(singleHouse.id) === {{ family.residential_address.single_house_id }}) {
+                                option.selected = true;
+                            }
+                        {% endif %}
+                        
+                        singleHouseSelect.appendChild(option);
+                    });
+                });
+            }
+        }
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAddressFields();
+            
+            // 如果家庭有居住地址，加载对应的小区和胡同数据
+            const communitySelect = document.getElementById('community');
+            if (communitySelect.value) {
+                updateEstatesAndHutongs();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -14,8 +14,8 @@ function initializeFamilyManagement() {
     // 初始化添加家庭按钮功能
     initializeAddFamilyButton();
     
-    // 加载家庭数据
-    loadFamilies();
+    // 注释掉不再需要的加载家庭数据函数，因为我们现在使用Django模板直接渲染数据
+    // loadFamilies();
 }
 
 // 初始化重置按钮
@@ -31,7 +31,7 @@ function initializeResetButton() {
             });
             
             // 重置后刷新数据
-            loadFamilies();
+            // loadFamilies(); // 注释掉，因为我们现在使用Django模板直接渲染数据
             console.log('搜索已重置');
         });
     }
@@ -42,6 +42,8 @@ function initializeSearchFunctionality() {
     // 监听搜索输入框的按键事件
     const searchInput = document.querySelector('input[type="text"]');
     if (searchInput) {
+        // 注释掉自动搜索功能，因为我们现在使用表单提交
+        /*
         let searchTimeout;
         searchInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
@@ -57,6 +59,7 @@ function initializeSearchFunctionality() {
                 loadFamilies(params.toString());
             }, 300);
         });
+        */
     }
 }
 
@@ -302,13 +305,18 @@ async function editFamily(familyId) {
 
 // 初始化添加家庭按钮功能
 function initializeAddFamilyButton() {
-    const addButton = document.querySelector('button i.fa-plus').parentElement;
+    const addButton = document.querySelector('a i.fa-plus');
     if (addButton) {
-        addButton.addEventListener('click', function() {
-            console.log('添加新家庭');
-            // 这里可以添加添加新家庭的逻辑，例如打开模态框
-            showNotification('添加功能开发中', 'info');
-        });
+        const parentButton = addButton.parentElement;
+        if (parentButton) {
+            parentButton.addEventListener('click', function(e) {
+                // 阻止默认的链接跳转行为，因为我们现在使用表单提交
+                // e.preventDefault();
+                // console.log('添加新家庭');
+                // 这里可以添加添加新家庭的逻辑，例如打开模态框
+                // showNotification('添加功能开发中', 'info');
+            });
+        }
     }
 }
 

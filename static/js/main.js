@@ -120,9 +120,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const logoutLink = document.querySelector('a[href="/logout/"]');
     if (logoutLink) {
         logoutLink.addEventListener('click', function(event) {
-            if (!confirm('确定要退出登录吗？')) {
-                event.preventDefault();
-            }
+            // 阻止默认事件
+            event.preventDefault();
+            
+            // 显示确认弹窗
+            showConfirmModal('确认退出', '确定要退出登录吗？', function(confirmed) {
+                if (confirmed) {
+                    // 执行退出登录
+                    window.location.href = logoutLink.href;
+                }
+            });
         });
     }
     
