@@ -40,6 +40,12 @@ class SocialWorker(models.Model):
                                   null=True,
                                   blank=True,
                                   verbose_name="所属社区")
+    user_profile = models.OneToOneField('UserProfile',
+                                        on_delete=models.SET_NULL,
+                                        null=True,
+                                        blank=True,
+                                        unique=True,
+                                        verbose_name="关联用户")
     name = models.CharField(max_length=20, verbose_name="姓名")
     gender = models.SmallIntegerField(choices=[(1, "男"), (2, "女")],
                                       default=1,
@@ -295,17 +301,11 @@ class UserProfile(models.Model):
     role = models.SmallIntegerField(choices=ROLE_CHOICES,
                                     default=2,
                                     verbose_name="角色")
-    name = models.CharField(max_length=20,
-                            verbose_name="姓名",
-                            blank=True,
-                            null=True)
-    phone = models.CharField(max_length=15,
-                             verbose_name="联系电话",
-                             blank=True,
-                             null=True)
     department = models.SmallIntegerField(choices=DEPARTMENT_CHOICES,
                                           default=3,
                                           verbose_name="部门")
+    is_baned = models.BooleanField(default=True,
+                                   verbose_name="是否在职（True:在职, False:离职）")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
     # 备注字段
@@ -316,7 +316,45 @@ class UserProfile(models.Model):
         verbose_name_plural = "1. 用户扩展信息列表"
 
     def __str__(self):
-        return f"{self.department} - {self.user.username} - {self.phone}"
+        return f"{self.department} - {self.user.username}"
+
+
+# 干部模型
+
+
+class Cadre(models.Model):
+    user_profile = models.OneToOneField(UserProfile,
+                                        on_delete=models.SET_NULL,
+                                        null=True,
+                                        blank=True,
+                                        unique=True,
+                                        verbose_name="关联用户")
+    name = models.CharField(max_length=20, verbose_name="姓名")
+    gender = models.SmallIntegerField(choices=[(1, "男"), (2, "女")],
+                                      default=1,
+                                      verbose_name="性别")
+    phone = models.CharField(max_length=15,
+                             verbose_name="联系电话",
+                             null=True,
+                             blank=True)
+    birth_date = models.DateField(verbose_name="出生年月", null=True, blank=True)
+    position = models.CharField(max_length=50,
+                                verbose_name="职务",
+                                null=True,
+                                blank=True)
+    is_baned = models.BooleanField(default=True,
+                                   verbose_name="是否在职（True:在职, False:离职）")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 备注字段
+    remark = models.TextField(verbose_name="备注", blank=True, null=True)
+
+    class Meta:
+        verbose_name = "3. 干部"
+        verbose_name_plural = "3. 干部列表"
+
+    def __str__(self):
+        return f"{self.name} - {self.position}"
 
 
 # 居民模型
@@ -480,9 +518,9 @@ class Notification(models.Model):
 
 # 通知附件模型
 
-
 import os
 from django.utils import timezone
+
 
 def upload_to_notification_attachments(instance, filename):
     """自定义附件上传路径和文件名，防止重名"""
@@ -494,14 +532,19 @@ def upload_to_notification_attachments(instance, filename):
     # 返回完整的上传路径
     return f'notification_attachments/{unique_filename}'
 
+
 class NotificationAttachment(models.Model):
     notification = models.ForeignKey(Notification,
                                      on_delete=models.CASCADE,
                                      verbose_name="关联通知",
                                      related_name="attachments")
-    file = models.FileField(upload_to=upload_to_notification_attachments, verbose_name="附件文件")
+    file = models.FileField(upload_to=upload_to_notification_attachments,
+                            verbose_name="附件文件")
     filename = models.CharField(max_length=255, verbose_name="原始文件名")
-    description = models.CharField(max_length=255, blank=True, null=True, verbose_name="附件描述")
+    description = models.CharField(max_length=255,
+                                   blank=True,
+                                   null=True,
+                                   verbose_name="附件描述")
     upload_time = models.DateTimeField(auto_now_add=True, verbose_name="上传时间")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")

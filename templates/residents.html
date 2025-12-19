@@ -98,105 +98,104 @@
     </form>
 
     <!-- 居民列表 -->
-    <div class="overflow-x-auto">
-      <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-        <thead>
-          <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            <th class="px-6 py-3 border-b border-gray-200">姓名</th>
-            <th class="px-6 py-3 border-b border-gray-200">性别</th>
-            <th class="px-6 py-3 border-b border-gray-200">民族</th>
-            <th class="px-6 py-3 border-b border-gray-200">身份证号</th>
-            <th class="px-6 py-3 border-b border-gray-200">联系电话</th>
-            <th class="px-6 py-3 border-b border-gray-200">家庭</th>
-            <th class="px-6 py-3 border-b border-gray-200">政治面貌</th>
-            <th class="px-6 py-3 border-b border-gray-200">更新时间</th>
-            <th class="px-6 py-3 border-b border-gray-200">操作</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          {% for resident in residents %}
-          <tr class="hover:bg-gray-50 transition-colors">
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ resident.name }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ resident.get_gender_display }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ resident.get_nationality_display }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ resident.id_card }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ resident.phone|default:"-" }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><a href="/families/?search_query={{ resident.family.household_number|default:'' }}" class="text-primary hover:underline cursor-pointer">{{ resident.family.household_number|default:"-" }}</a></td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ resident.get_political_status_display|default:"-" }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ resident.updated_at|date:"Y-m-d H:i:s" }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <button onclick="showOtherInfoModal('{{ resident.id }}', '{{ resident.remark|default:''|escapejs }}', '{{ resident.get_marital_status_display|default:''|escapejs }}', '{{ resident.get_education_display|default:''|escapejs }}', '{{ resident.job|yesno:"是,否"|escapejs }}', '{{ resident.is_dead|yesno:"是,否"|escapejs }}')" class="text-yellow-600 hover:text-yellow-900 mr-3">更多</button>
-              <button onclick="showEditResidentModal('{{ resident.id }}')" class="text-gray-600 hover:text-gray-900 mr-3">编辑</button>
-              <a href="/delete-resident/{{ resident.id }}/" onclick="event.preventDefault(); deleteResident('{{ resident.id }}');" class="text-red-600 hover:text-red-900">删除</a>
-            </td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="9" class="px-6 py-10 text-center text-gray-500">
-              <div class="flex flex-col items-center justify-center">
-                <i class="fa fa-users text-4xl mb-4"></i>
-                <h3 class="text-lg font-medium mb-2">未找到符合条件的居民数据</h3>
-                <p class="text-sm">请尝试调整筛选条件</p>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
-    <!-- 分页 -->
-    <div class="flex flex-col sm:flex-row items-center justify-between mt-6">
-      <div class="text-sm text-gray-500 mb-4 sm:mb-0">
-        显示 <span class="font-medium">{{ page_obj.start_index }}</span> 到 <span class="font-medium">{{ page_obj.end_index }}</span> 条，共 <span class="font-medium">{{ total_residents }}</span> 条记录
+    <div id="residents-container">
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+          <thead>
+            <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 border-b border-gray-200">姓名</th>
+              <th class="px-6 py-3 border-b border-gray-200">性别</th>
+              <th class="px-6 py-3 border-b border-gray-200">民族</th>
+              <th class="px-6 py-3 border-b border-gray-200">身份证号</th>
+              <th class="px-6 py-3 border-b border-gray-200">联系电话</th>
+              <th class="px-6 py-3 border-b border-gray-200">家庭</th>
+              <th class="px-6 py-3 border-b border-gray-200">政治面貌</th>
+              <th class="px-6 py-3 border-b border-gray-200">更新时间</th>
+              <th class="px-6 py-3 border-b border-gray-200">操作</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for resident in residents %}
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ resident.name }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ resident.get_gender_display }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ resident.get_nationality_display }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ resident.id_card }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ resident.phone|default:"-" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><a href="/families/?search_query={{ resident.family.household_number|default:'' }}" class="text-primary hover:underline cursor-pointer">{{ resident.family.household_number|default:"-" }}</a></td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ resident.get_political_status_display|default:"-" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ resident.updated_at|date:"Y-m-d H:i:s" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <button onclick="showOtherInfoModal('{{ resident.id }}', '{{ resident.remark|default:''|escapejs }}', '{{ resident.get_marital_status_display|default:''|escapejs }}', '{{ resident.get_education_display|default:''|escapejs }}', '{{ resident.job|yesno:"是,否"|escapejs }}', '{{ resident.is_dead|yesno:"是,否"|escapejs }}')" class="text-yellow-600 hover:text-yellow-900 mr-3">更多</button>
+                <button onclick="showEditResidentModal('{{ resident.id }}')" class="text-gray-600 hover:text-gray-900 mr-3">编辑</button>
+                <a href="/delete-resident/{{ resident.id }}/" onclick="event.preventDefault(); deleteResident('{{ resident.id }}');" class="text-red-600 hover:text-red-900">删除</a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="9" class="px-6 py-10 text-center text-gray-500">
+                <div class="flex flex-col items-center justify-center">
+                  <i class="fa fa-users text-4xl mb-4"></i>
+                  <h3 class="text-lg font-medium mb-2">未找到符合条件的居民数据</h3>
+                  <p class="text-sm">请尝试调整筛选条件</p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-      <div class="flex items-center space-x-2">
-        <!-- 每页显示条数选择 -->
-        <div class="mr-4 flex items-center">
-          <span class="text-sm text-gray-500 mr-2">每页显示：</span>
-          <select id="page_size" onchange="changePageSize()"
-            class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-            <option value="5" {% if page_size == '5' %}selected{% endif %}>5</option>
-            <option value="10" {% if page_size == '10' %}selected{% endif %}>10</option>
-            <option value="20" {% if page_size == '20' %}selected{% endif %}>20</option>
-            <option value="50" {% if page_size == '50' %}selected{% endif %}>50</option>
-          </select>
+
+      <!-- 分页 -->
+      <div class="flex flex-col sm:flex-row items-center justify-between mt-6">
+        <div class="text-sm text-gray-500 mb-4 sm:mb-0">
+          显示 <span class="font-medium">{{ page_obj.start_index }}</span> 到 <span class="font-medium">{{ page_obj.end_index }}</span> 条，共 <span class="font-medium">{{ total_residents }}</span> 条记录
         </div>
-        
-        <!-- 页码导航 -->
-        <div class="flex items-center space-x-1">
-          {% if page_obj.has_previous %}
-          <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}{% if political_status %}&political_status={{ political_status }}{% endif %}{% if age_group %}&age_group={{ age_group }}{% endif %}{% if nationality %}&nationality={{ nationality }}{% endif %}{% if education %}&education={{ education }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
-            class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-            上一页
-          </a>
-          {% else %}
-          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-            disabled>
-            上一页
-          </button>
-          {% endif %}
+        <div class="flex items-center space-x-2">
+          <!-- 每页显示条数选择 -->
+          <div class="mr-4 flex items-center">
+            <span class="text-sm text-gray-500 mr-2">每页显示：</span>
+            <select id="page_size" onchange="refreshResidents({ page_size: this.value, page: 1 })"
+              class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="5" {% if page_size == '5' %}selected{% endif %}>5</option>
+              <option value="10" {% if page_size == '10' %}selected{% endif %}>10</option>
+              <option value="20" {% if page_size == '20' %}selected{% endif %}>20</option>
+              <option value="50" {% if page_size == '50' %}selected{% endif %}>50</option>
+            </select>
+          </div>
           
-          {% for num in page_obj.paginator.page_range %}
-          {% if page_obj.number == num %}
-          <button class="px-3 py-1 border border-primary bg-primary text-white rounded-md text-sm hover:bg-blue-700">{{ num }}</button>
-          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-          <a href="?page={{ num }}&page_size={{ page_size }}{% if political_status %}&political_status={{ political_status }}{% endif %}{% if age_group %}&age_group={{ age_group }}{% endif %}{% if nationality %}&nationality={{ nationality }}{% endif %}{% if education %}&education={{ education }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
-            class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">{{ num }}</a>
-          {% endif %}
-          {% endfor %}
-          
-          {% if page_obj.has_next %}
-          <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}{% if political_status %}&political_status={{ political_status }}{% endif %}{% if age_group %}&age_group={{ age_group }}{% endif %}{% if nationality %}&nationality={{ nationality }}{% endif %}{% if education %}&education={{ education }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
-            class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-            下一页
-          </a>
-          {% else %}
-          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-            disabled>
-            下一页
-          </button>
-          {% endif %}
+          <!-- 页码导航 -->
+          <div class="flex items-center space-x-1">
+            {% if page_obj.has_previous %}
+            <button onclick="refreshResidents({ page: {{ page_obj.previous_page_number }} })" class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+              上一页
+            </button>
+            {% else %}
+            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+              disabled>
+              上一页
+            </button>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <button class="px-3 py-1 border border-primary bg-primary text-white rounded-md text-sm hover:bg-blue-700">{{ num }}</button>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <button onclick="refreshResidents({ page: {{ num }} })" class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">{{ num }}</button>
+            {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <button onclick="refreshResidents({ page: {{ page_obj.next_page_number }} })" class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+              下一页
+            </button>
+            {% else %}
+            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+              disabled>
+              下一页
+            </button>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>
@@ -205,13 +204,41 @@
 
     <!-- JavaScript 处理分页请求和筛选 -->
     <script>
-        function changePageSize() {
-            const pageSize = document.getElementById('page_size').value;
-            // 构建当前URL，保持所有筛选条件和搜索条件
-            const currentUrl = new URL(window.location.href);
-            currentUrl.searchParams.set('page', '1'); // 改变每页显示条数时，回到第一页
-            currentUrl.searchParams.set('page_size', pageSize);
-            window.location.href = currentUrl.href;
+        // 刷新居民列表
+        function refreshResidents(additionalParams = {}) {
+            // 获取当前表单数据
+            const form = document.querySelector('form');
+            const formData = new FormData(form);
+            
+            // 获取当前URL的查询参数
+            const params = new URLSearchParams(window.location.search);
+            const currentParams = {};
+            for (const [key, value] of params.entries()) {
+                currentParams[key] = value;
+            }
+            
+            // 合并参数：URL参数优先，然后是表单数据，最后是额外参数
+            const newParams = { ...currentParams, ...Object.fromEntries(formData), ...additionalParams };
+            
+            // 发送AJAX请求
+            fetch(window.location.pathname + '?' + new URLSearchParams(newParams))
+                .then(response => response.text())
+                .then(html => {
+                    // 创建临时容器解析HTML
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    
+                    // 更新居民列表
+                    const newResidentsContainer = tempDiv.querySelector('#residents-container');
+                    if (newResidentsContainer) {
+                        document.getElementById('residents-container').innerHTML = newResidentsContainer.innerHTML;
+                    }
+                })
+                .catch(error => {
+                    console.error('刷新居民列表失败:', error);
+                    // 失败时回退到完整页面刷新
+                    window.location.href = window.location.pathname + '?' + new URLSearchParams(newParams);
+                });
         }
         
         // 显示其他信息模态框
@@ -321,6 +348,15 @@
         
         // 页面加载完成后添加事件监听
         document.addEventListener('DOMContentLoaded', function() {
+            // 监听表单提交事件，使用AJAX处理
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    refreshResidents({ page: 1 });
+                });
+            }
+            
             // 添加关闭按钮事件监听
             const closeButton = document.getElementById('close-edit-resident-modal');
             const cancelButton = document.getElementById('cancel-edit-resident-btn');
@@ -436,13 +472,53 @@
                         alert(data.message || '居民添加成功！');
                         // 关闭弹窗
                         closeAddResidentModal();
-                        // 刷新页面，显示更新后的数据
-                        window.location.reload();
+                        // 刷新居民列表，显示更新后的数据
+                        refreshResidents({ page: 1 });
                     })
                     .catch(error => {
                         console.error('添加居民失败:', error);
                         // 显示错误消息
                         alert('添加居民失败：' + (error.message || '未知错误'));
+                    });
+                });
+            }
+            
+            // 编辑居民表单提交处理
+            const editResidentForm = document.getElementById('edit-resident-form');
+            if (editResidentForm) {
+                editResidentForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const formData = new FormData(editResidentForm);
+                    const residentId = formData.get('id');
+                    
+                    // 发送PUT请求编辑居民
+                    fetch(`/edit-resident/${residentId}/`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrf-token]').getAttribute('content')
+                        },
+                        body: JSON.stringify(Object.fromEntries(formData))
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        }
+                        return response.json().then(err => Promise.reject(err));
+                    })
+                    .then(data => {
+                        // 显示成功消息
+                        alert(data.message || '居民更新成功！');
+                        // 关闭弹窗
+                        closeEditResidentModal();
+                        // 刷新居民列表，显示更新后的数据
+                        refreshResidents();
+                    })
+                    .catch(error => {
+                        console.error('更新居民失败:', error);
+                        // 显示错误消息
+                        alert('更新居民失败：' + (error.message || '未知错误'));
                     });
                 });
             }
@@ -453,7 +529,24 @@
             showConfirmModal('确认删除', '确定要删除该居民吗？此操作不可恢复。', function(confirmed) {
                 if (confirmed) {
                     // 执行删除操作
-                    window.location.href = '/delete-resident/' + residentId + '/';
+                    fetch(`/delete-resident/${residentId}/`, {
+                        method: 'GET',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrf-token]').getAttribute('content')
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // 刷新居民列表
+                            refreshResidents();
+                        } else {
+                            alert('删除失败，请稍后重试');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('删除居民失败:', error);
+                        alert('删除居民失败，请稍后重试');
+                    });
                 }
             });
         }

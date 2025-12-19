@@ -1,260 +1,402 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}管理系统 - 仪表盘 - 仪表盘{% endblock %}
-
-{% block page_title %}仪表盘{% endblock %}
-
-{% block content %}
-<!-- 仪表盘 -->
-<section id="dashboard" class="page-section">
-  <!-- 统计卡片 -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-  <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-sm font-medium text-gray-500">总户数</p>
-        <p class="text-2xl font-bold text-gray-800">248</p>
-      </div>
-      <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-        <i class="fa fa-home text-primary text-xl"></i>
-      </div>
-    </div>
-    <div class="mt-4 flex items-center">
-      <span class="text-green-500 text-sm font-medium flex items-center">
-        <i class="fa fa-arrow-up mr-1"></i> 3.2%
-      </span>
-      <span class="text-gray-500 text-sm ml-2">较上月</span>
-    </div>
-  </div>
-
-  <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-sm font-medium text-gray-500">总人数</p>
-        <p class="text-2xl font-bold text-gray-800">672</p>
-      </div>
-      <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-        <i class="fa fa-users text-success text-xl"></i>
-      </div>
-    </div>
-    <div class="mt-4 flex items-center">
-      <span class="text-green-500 text-sm font-medium flex items-center">
-        <i class="fa fa-arrow-up mr-1"></i> 1.8%
-      </span>
-      <span class="text-gray-500 text-sm ml-2">较上月</span>
-    </div>
-  </div>
-
-  <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-sm font-medium text-gray-500">特殊人群</p>
-        <p class="text-2xl font-bold text-gray-800">42</p>
-      </div>
-      <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
-        <i class="fa fa-heart text-warning text-xl"></i>
-      </div>
-    </div>
-    <div class="mt-4 flex items-center">
-      <span class="text-red-500 text-sm font-medium flex items-center">
-        <i class="fa fa-arrow-down mr-1"></i> 0.5%
-      </span>
-      <span class="text-gray-500 text-sm ml-2">较上月</span>
-    </div>
-  </div>
-
-  <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-sm font-medium text-gray-500">待处理通知</p>
-        <p class="text-2xl font-bold text-gray-800">7</p>
-      </div>
-      <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-        <i class="fa fa-bell text-danger text-xl"></i>
-      </div>
-    </div>
-    <div class="mt-4 flex items-center">
-      <span class="text-green-500 text-sm font-medium flex items-center">
-        <i class="fa fa-arrow-up mr-1"></i> 2
-      </span>
-      <span class="text-gray-500 text-sm ml-2">较昨日</span>
-    </div>
-  </div>
-</div>
-
-<!-- 图表区域 -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <!-- 年龄分布图 -->
-  <div class="bg-white rounded-lg shadow-sm p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-semibold text-gray-800">年龄分布</h3>
-      <div class="flex space-x-2">
-        <button class="text-gray-500 hover:text-primary focus:outline-none">
-          <i class="fa fa-download"></i>
-        </button>
-        <button class="text-gray-500 hover:text-primary focus:outline-none">
-          <i class="fa fa-ellipsis-v"></i>
-        </button>
-      </div>
-    </div>
-    <div class="h-64">
-      <canvas id="ageDistributionChart"></canvas>
-    </div>
-  </div>
-
-  <!-- 性别比例图 -->
-  <div class="bg-white rounded-lg shadow-sm p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-semibold text-gray-800">性别比例</h3>
-      <div class="flex space-x-2">
-        <button class="text-gray-500 hover:text-primary focus:outline-none">
-          <i class="fa fa-download"></i>
-        </button>
-        <button class="text-gray-500 hover:text-primary focus:outline-none">
-          <i class="fa fa-ellipsis-v"></i>
-        </button>
-      </div>
-    </div>
-    <div class="h-64">
-      <canvas id="genderRatioChart"></canvas>
-    </div>
-  </div>
-</div>
-
-<!-- 最近活动和通知 -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <!-- 最近入住 -->
-  <div class="bg-white rounded-lg shadow-sm p-6 lg:col-span-2">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-semibold text-gray-800">最近入住</h3>
-      <a href="{% url 'residents' %}" class="text-primary hover:underline text-sm font-medium">查看全部</a>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead>
-          <tr>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">姓名</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">年龄</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">住址</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">入住日期</th>
-            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr>
-            <td class="px-4 py-3 whitespace-nowrap">
-              <div class="flex items-center">
-                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-primary">
-                  <span>张</span>
-                </div>
-                <div class="ml-3">
-                  <p class="text-sm font-medium text-gray-900">张明</p>
-                  <p class="text-xs text-gray-500">13812345678</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">35</td>
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">1号楼3单元501室</td>
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-06-15</td>
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-              <a href="#" class="text-primary hover:underline">查看详情</a>
-            </td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 whitespace-nowrap">
-              <div class="flex items-center">
-                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-success">
-                  <span>李</span>
-                </div>
-                <div class="ml-3">
-                  <p class="text-sm font-medium text-gray-900">李华</p>
-                  <p class="text-xs text-gray-500">13987654321</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">28</td>
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2号楼1单元202室</td>
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-06-12</td>
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-              <a href="#" class="text-primary hover:underline">查看详情</a>
-            </td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3 whitespace-nowrap">
-              <div class="flex items-center">
-                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
-                  <span>王</span>
-                </div>
-                <div class="ml-3">
-                  <p class="text-sm font-medium text-gray-900">王芳</p>
-                  <p class="text-xs text-gray-500">13765432198</p>
-                </div>
-              </div>
-            </td>
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">42</td>
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">3号楼2单元701室</td>
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">2023-06-10</td>
-            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-              <a href="#" class="text-primary hover:underline">查看详情</a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- 最新通知 -->
-  <div class="bg-white rounded-lg shadow-sm p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-semibold text-gray-800">最新通知</h3>
-      <a href="{% url 'notifications' %}" class="text-primary hover:underline text-sm font-medium">查看全部</a>
-    </div>
-    <div class="space-y-4">
-      <div class="p-3 bg-red-50 border-l-4 border-red-500 rounded-r-lg">
-        <div class="flex items-start">
-          <div class="flex-shrink-0">
-            <i class="fa fa-exclamation-circle text-red-500"></i>
-          </div>
-          <div class="ml-3">
-            <h4 class="text-sm font-medium text-red-800">停水通知</h4>
-            <p class="text-xs text-red-700 mt-1">6月20日9:00-15:00将进行水管维修，请提前做好储水准备。</p>
-            <p class="text-xs text-red-600 mt-2">今天 08:30</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="p-3 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
-        <div class="flex items-start">
-          <div class="flex-shrink-0">
-            <i class="fa fa-info-circle text-blue-500"></i>
-          </div>
-          <div class="ml-3">
-            <h4 class="text-sm font-medium text-blue-800">社区活动通知</h4>
-            <p class="text-xs text-blue-700 mt-1">6月25日将举办"邻里节"活动，欢迎各位居民参加。</p>
-            <p class="text-xs text-blue-600 mt-2">昨天 16:45</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="p-3 bg-green-50 border-l-4 border-green-500 rounded-r-lg">
-        <div class="flex items-start">
-          <div class="flex-shrink-0">
-            <i class="fa fa-check-circle text-green-500"></i>
-          </div>
-          <div class="ml-3">
-            <h4 class="text-sm font-medium text-green-800">垃圾分类表彰</h4>
-            <p class="text-xs text-green-700 mt-1">恭喜1号楼、3号楼获得上月垃圾分类优秀楼栋。</p>
-            <p class="text-xs text-green-600 mt-2">6月15日 10:20</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-</section>
-{% endblock %}
+{% block title %}管理系统 - 首页{% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/dashboard.js' %}"></script>
+<script>
+function toggleSort(field) {
+    // 获取当前排序参数
+    const currentSortField = '{{ sort_field|default:"name" }}';
+    const currentSortOrder = '{{ sort_order|default:"asc" }}';
+    
+    // 计算新的排序参数
+    let newSortOrder = 'asc';
+    if (currentSortField === field) {
+        if (currentSortOrder === 'asc') {
+            newSortOrder = 'desc';
+        } else {
+            // 第三次点击恢复默认排序
+            refreshContacts({
+                sort_field: undefined,
+                sort_order: undefined
+            });
+            return;
+        }
+    }
+    
+    // 刷新联系人列表
+    refreshContacts({
+        sort_field: field,
+        sort_order: newSortOrder
+    });
+}
+
+function changePage(listType, page) {
+    if (listType === 'contacts') {
+        refreshContacts({ contacts_page: page });
+    } else if (listType === 'communities') {
+        refreshCommunities({ communities_page: page });
+    }
+}
+
+function resetSearch() {
+    document.querySelector('#contacts-search-form input[name="search_query"]').value = '';
+    refreshContacts({ search_query: '' });
+}
+
+function refreshContacts(additionalParams = {}) {
+    // 获取当前URL的查询参数
+    const params = new URLSearchParams(window.location.search);
+    const currentParams = {};
+    for (const [key, value] of params.entries()) {
+        currentParams[key] = value;
+    }
+    
+    // 合并参数
+    const newParams = { ...currentParams, ...additionalParams };
+    
+    // 发送AJAX请求
+    fetch(window.location.pathname + '?' + new URLSearchParams(newParams))
+        .then(response => response.text())
+        .then(html => {
+            // 创建临时容器解析HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // 更新通讯录列表
+            const newContactsContainer = tempDiv.querySelector('#contacts-container');
+            if (newContactsContainer) {
+                document.getElementById('contacts-container').innerHTML = newContactsContainer.innerHTML;
+            }
+        })
+        .catch(error => {
+            console.error('刷新通讯录失败:', error);
+            // 失败时回退到完整页面刷新
+            window.location.href = window.location.pathname + '?' + new URLSearchParams(newParams);
+        });
+}
+
+function refreshCommunities(additionalParams = {}) {
+    // 获取当前URL的查询参数
+    const params = new URLSearchParams(window.location.search);
+    const currentParams = {};
+    for (const [key, value] of params.entries()) {
+        currentParams[key] = value;
+    }
+    
+    // 合并参数
+    const newParams = { ...currentParams, ...additionalParams };
+    
+    // 发送AJAX请求
+    fetch(window.location.pathname + '?' + new URLSearchParams(newParams))
+        .then(response => response.text())
+        .then(html => {
+            // 创建临时容器解析HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // 更新社区列表
+            const newCommunitiesContainer = tempDiv.querySelector('#communities-container');
+            if (newCommunitiesContainer) {
+                document.getElementById('communities-container').innerHTML = newCommunitiesContainer.innerHTML;
+            }
+        })
+        .catch(error => {
+            console.error('刷新社区列表失败:', error);
+            // 失败时回退到完整页面刷新
+            window.location.href = window.location.pathname + '?' + new URLSearchParams(newParams);
+        });
+}
+
+// 监听搜索表单提交事件
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('contacts-search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(searchForm);
+            const searchQuery = formData.get('search_query');
+            refreshContacts({ search_query: searchQuery });
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block page_title %}首页{% endblock %}
+
+{% block content %}
+<!-- 首页内容 -->
+<section id="home" class="page-section">
+  <!-- 社区人口与家庭数据卡片 -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">数据概览</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- 总人口卡片 -->
+      <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 mb-1">总人口数</p>
+            <h4 class="text-3xl font-bold text-blue-600">{{ community_data.total_population }}</h4>
+            <p class="text-xs text-gray-500 mt-1">数据源: {{ community_data.data_source }}</p>
+          </div>
+          <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+            <i class="fa fa-users text-blue-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 总家庭卡片 -->
+      <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 mb-1">总家庭数</p>
+            <h4 class="text-3xl font-bold text-green-600">{{ community_data.total_families }}</h4>
+            <p class="text-xs text-gray-500 mt-1">数据源: {{ community_data.data_source }}</p>
+          </div>
+          <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+            <i class="fa fa-home text-green-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 未读通知卡片 -->
+      <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-100">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500 mb-1">未读通知</p>
+            <h4 class="text-3xl font-bold {% if unread_notifications_count > 0 %}text-red-600{% else %}text-green-600{% endif %}">{{ unread_notifications_count }}</h4>
+            <p class="text-xs text-gray-500 mt-1">数据源: 系统通知</p>
+          </div>
+          <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+            <i class="fa fa-bell text-purple-600 text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 双栏容器 -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- 通讯录管理 -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">通讯录管理</h3>
+      <!-- 搜索表单 -->
+      <form id="contacts-search-form" class="mb-4 flex items-center space-x-2">
+        <input type="text" name="search_query" placeholder="搜索姓名或联系电话" value="{{ search_query|default:'' }}" 
+               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+        <button type="submit" 
+                class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center text-sm">
+          <i class="fa fa-search mr-2"></i> 搜索
+        </button>
+        {% if search_query %}
+        <button type="button" onclick="resetSearch()" 
+           class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent flex items-center justify-center text-sm">
+          <i class="fa fa-refresh mr-2"></i> 重置
+        </button>
+        {% endif %}
+      </form>
+      
+      <!-- 通讯录列表容器 -->
+      <div id="contacts-container">
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider border-b cursor-pointer {% if sort_field == 'name' %}bg-primary/10 text-primary font-bold{% else %}text-gray-500{% endif %}" onclick="toggleSort('name')">
+                  姓名
+                  <span class="inline-block ml-1">
+                    {% if sort_field == 'name' %}
+                      {% if sort_order == 'asc' %}
+                        <i class="fa fa-sort-asc text-primary"></i>
+                      {% else %}
+                        <i class="fa fa-sort-desc text-primary"></i>
+                      {% endif %}
+                    {% else %}
+                      <i class="fa fa-sort text-gray-400"></i>
+                    {% endif %}
+                  </span>
+                </th>
+                <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider border-b cursor-pointer {% if sort_field == 'department' %}bg-primary/10 text-primary font-bold{% else %}text-gray-500{% endif %}" onclick="toggleSort('department')">
+                  部门
+                  <span class="inline-block ml-1">
+                    {% if sort_field == 'department' %}
+                      {% if sort_order == 'asc' %}
+                        <i class="fa fa-sort-asc text-primary"></i>
+                      {% else %}
+                        <i class="fa fa-sort-desc text-primary"></i>
+                      {% endif %}
+                    {% else %}
+                      <i class="fa fa-sort text-gray-400"></i>
+                    {% endif %}
+                  </span>
+                </th>
+                <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider border-b cursor-pointer {% if sort_field == 'phone' %}bg-primary/10 text-primary font-bold{% else %}text-gray-500{% endif %}" onclick="toggleSort('phone')">
+                  联系电话
+                  <span class="inline-block ml-1">
+                    {% if sort_field == 'phone' %}
+                      {% if sort_order == 'asc' %}
+                        <i class="fa fa-sort-asc text-primary"></i>
+                      {% else %}
+                        <i class="fa fa-sort-desc text-primary"></i>
+                      {% endif %}
+                    {% else %}
+                      <i class="fa fa-sort text-gray-400"></i>
+                    {% endif %}
+                  </span>
+                </th>
+                <th class="py-3 px-4 text-left text-xs font-medium uppercase tracking-wider border-b cursor-pointer {% if sort_field == 'type' %}bg-primary/10 text-primary font-bold{% else %}text-gray-500{% endif %}" onclick="toggleSort('type')">
+                  职务
+                  <span class="inline-block ml-1">
+                    {% if sort_field == 'type' %}
+                      {% if sort_order == 'asc' %}
+                        <i class="fa fa-sort-asc text-primary"></i>
+                      {% else %}
+                        <i class="fa fa-sort-desc text-primary"></i>
+                      {% endif %}
+                    {% else %}
+                      <i class="fa fa-sort text-gray-400"></i>
+                    {% endif %}
+                  </span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              {% for contact in contacts %}
+              <tr class="hover:bg-gray-50">
+                <td class="py-3 px-4 border-b">{{ contact.name }}</td>
+                <td class="py-3 px-4 border-b">{{ contact.department }}</td>
+                <td class="py-3 px-4 border-b">{{ contact.phone }}</td>
+                <td class="py-3 px-4 border-b">{{ contact.type }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="4" class="py-6 px-4 text-center text-gray-500">暂无通讯录数据</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <!-- 通讯录分页 -->
+        {% if contacts_page_obj.has_other_pages %}
+        <div class="mt-4 flex justify-center">
+          <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            {% if contacts_page_obj.has_previous %}
+            <a href="javascript:void(0)" onclick="changePage('contacts', {{ contacts_page_obj.previous_page_number }})" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <span class="sr-only">上一页</span>
+              <i class="fa fa-chevron-left"></i>
+            </a>
+            {% else %}
+            <span class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-300 cursor-not-allowed">
+              <span class="sr-only">上一页</span>
+              <i class="fa fa-chevron-left"></i>
+            </span>
+            {% endif %}
+            
+            {% for num in contacts_page_obj.paginator.page_range %}
+            {% if contacts_page_obj.number == num %}
+            <span class="z-10 bg-primary border-primary text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+              {{ num }}
+            </span>
+            {% elif num > contacts_page_obj.number|add:-3 and num < contacts_page_obj.number|add:3 %}
+            <a href="javascript:void(0)" onclick="changePage('contacts', {{ num }})" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+              {{ num }}
+            </a>
+            {% endif %}
+            {% endfor %}
+            
+            {% if contacts_page_obj.has_next %}
+            <a href="javascript:void(0)" onclick="changePage('contacts', {{ contacts_page_obj.next_page_number }})" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <span class="sr-only">下一页</span>
+              <i class="fa fa-chevron-right"></i>
+            </a>
+            {% else %}
+            <span class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-300 cursor-not-allowed">
+              <span class="sr-only">下一页</span>
+              <i class="fa fa-chevron-right"></i>
+            </span>
+            {% endif %}
+          </nav>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- 社区列表 -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">社区列表</h3>
+      
+      <!-- 社区列表容器 -->
+      <div id="communities-container">
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">社区名称</th>
+                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">办公地址</th>
+                <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b">联系电话</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              {% for community in communities %}
+              <tr class="hover:bg-gray-50">
+                <td class="py-3 px-4 border-b font-medium">{{ community.name }}</td>
+                <td class="py-3 px-4 border-b">{{ community.address }}</td>
+                <td class="py-3 px-4 border-b">{{ community.phone }}</td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="3" class="py-6 px-4 text-center text-gray-500">暂无社区数据</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <!-- 社区列表分页 -->
+        {% if communities_page_obj.has_other_pages %}
+        <div class="mt-4 flex justify-center">
+          <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+            {% if communities_page_obj.has_previous %}
+            <a href="javascript:void(0)" onclick="changePage('communities', {{ communities_page_obj.previous_page_number }})" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <span class="sr-only">上一页</span>
+              <i class="fa fa-chevron-left"></i>
+            </a>
+            {% else %}
+            <span class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-300 cursor-not-allowed">
+              <span class="sr-only">上一页</span>
+              <i class="fa fa-chevron-left"></i>
+            </span>
+            {% endif %}
+            
+            {% for num in communities_page_obj.paginator.page_range %}
+            {% if communities_page_obj.number == num %}
+            <span class="z-10 bg-primary border-primary text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+              {{ num }}
+            </span>
+            {% elif num > communities_page_obj.number|add:-3 and num < communities_page_obj.number|add:3 %}
+            <a href="javascript:void(0)" onclick="changePage('communities', {{ num }})" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+              {{ num }}
+            </a>
+            {% endif %}
+            {% endfor %}
+            
+            {% if communities_page_obj.has_next %}
+            <a href="javascript:void(0)" onclick="changePage('communities', {{ communities_page_obj.next_page_number }})" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+              <span class="sr-only">下一页</span>
+              <i class="fa fa-chevron-right"></i>
+            </a>
+            {% else %}
+            <span class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-300 cursor-not-allowed">
+              <span class="sr-only">下一页</span>
+              <i class="fa fa-chevron-right"></i>
+            </span>
+            {% endif %}
+          </nav>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}

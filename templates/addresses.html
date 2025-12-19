@@ -116,107 +116,105 @@
     </form>
 
     <!-- 地址列表 -->
-    <div class="overflow-x-auto">
-      <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-        <thead>
-          <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            <th class="px-6 py-3 border-b border-gray-200">所属社区</th>
-            <th class="px-6 py-3 border-b border-gray-200">地址类型</th>
-            <th class="px-6 py-3 border-b border-gray-200">居住状态</th>
-            <th class="px-6 py-3 border-b border-gray-200">详细地址</th>
-            <th class="px-6 py-3 border-b border-gray-200">更新时间</th>
-            <th class="px-6 py-3 border-b border-gray-200">备注</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          {% for address in addresses %}
-          <tr class="hover:bg-gray-50 transition-colors">
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {% if address.estate %}{{ address.estate.community.name }}{% elif address.hutong %}{{ address.hutong.community.name }}{% else %}-{% endif %}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ address.get_address_type_display }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span class="px-3 py-1 
-                    {% if address.is_resident == 1 %}bg-green-100 text-green-800{% elif address.is_resident == 2 %}bg-blue-100 text-blue-800{% else %}bg-yellow-100 text-yellow-800{% endif %}
-                    text-xs font-semibold rounded-full">
-                {{ address.get_is_resident_display }}
-              </span>
-            </td>
-            <td class="px-6 py-4 text-sm text-gray-900">{{ address }}</td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-              {{ address.updated_at|date:"Y-m-d H:i:s" }}
-            </td>
-            <td class="px-6 py-4 text-sm text-gray-500">{{ address.remark|default:"-" }}</td>
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="6" class="px-6 py-10 text-center text-gray-500">
-              <div class="flex flex-col items-center justify-center">
-                <i class="fa fa-map-marker-alt text-4xl mb-4"></i>
-                <h3 class="text-lg font-medium mb-2">暂无地址数据</h3>
-                <p class="text-sm">请尝试调整筛选条件或导入数据</p>
-              </div>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-
-    <!-- 分页 -->
-    <div class="flex flex-col sm:flex-row items-center justify-between mt-6">
-      <div class="text-sm text-gray-500 mb-4 sm:mb-0">
-        显示 <span class="font-medium">{{ page_obj.start_index }}</span> 到 <span class="font-medium">{{ page_obj.end_index }}</span> 条，共 <span class="font-medium">{{ total_addresses }}</span> 条记录
+    <div id="addresses-container">
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+          <thead>
+            <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-3 border-b border-gray-200">所属社区</th>
+              <th class="px-6 py-3 border-b border-gray-200">地址类型</th>
+              <th class="px-6 py-3 border-b border-gray-200">居住状态</th>
+              <th class="px-6 py-3 border-b border-gray-200">详细地址</th>
+              <th class="px-6 py-3 border-b border-gray-200">更新时间</th>
+              <th class="px-6 py-3 border-b border-gray-200">备注</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for address in addresses %}
+            <tr class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {% if address.estate %}{{ address.estate.community.name }}{% elif address.hutong %}{{ address.hutong.community.name }}{% else %}-{% endif %}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ address.get_address_type_display }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {{ address.get_is_resident_display }}
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-900">{{ address }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                {{ address.updated_at|date:"Y-m-d H:i:s" }}
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-500">{{ address.remark|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                <div class="flex flex-col items-center justify-center">
+                  <i class="fa fa-map-marker-alt text-4xl mb-4"></i>
+                  <h3 class="text-lg font-medium mb-2">暂无地址数据</h3>
+                  <p class="text-sm">请尝试调整筛选条件或导入数据</p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-      <div class="flex items-center space-x-2">
-        <!-- 每页显示条数选择 -->
-        <div class="mr-4 flex items-center">
-          <span class="text-sm text-gray-500 mr-2">每页显示：</span>
-          <select id="page_size" onchange="changePageSize()"
-                  class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-            <option value="5" {% if page_size == '5' %}selected{% endif %}>5</option>
-            <option value="10" {% if page_size == '10' %}selected{% endif %}>10</option>
-            <option value="20" {% if page_size == '20' %}selected{% endif %}>20</option>
-            <option value="50" {% if page_size == '50' %}selected{% endif %}>50</option>
-          </select>
+
+      <!-- 分页 -->
+      <div class="flex flex-col sm:flex-row items-center justify-between mt-6">
+        <div class="text-sm text-gray-500 mb-4 sm:mb-0">
+          显示 <span class="font-medium">{{ page_obj.start_index }}</span> 到 <span class="font-medium">{{ page_obj.end_index }}</span> 条，共 <span class="font-medium">{{ total_addresses }}</span> 条记录
         </div>
-        
-        <!-- 页码导航 -->
-        <div class="flex items-center space-x-1">
-          {% if page_obj.has_previous %}
-          <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}{% if selected_community %}&community={{ selected_community }}{% endif %}{% if selected_estate %}&estate={{ selected_estate }}{% endif %}{% if selected_hutong %}&hutong={{ selected_hutong }}{% endif %}{% if selected_address_type %}&address_type={{ selected_address_type }}{% endif %}{% if selected_is_resident %}&is_resident={{ selected_is_resident }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
-             class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-            上一页
-          </a>
-          {% else %}
-          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                  disabled>
-            上一页
-          </button>
-          {% endif %}
+        <div class="flex items-center space-x-2">
+          <!-- 每页显示条数选择 -->
+          <div class="mr-4 flex items-center">
+            <span class="text-sm text-gray-500 mr-2">每页显示：</span>
+            <select id="page_size" onchange="changePageSize()"
+                    class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="5" {% if page_size == '5' %}selected{% endif %}>5</option>
+              <option value="10" {% if page_size == '10' %}selected{% endif %}>10</option>
+              <option value="20" {% if page_size == '20' %}selected{% endif %}>20</option>
+              <option value="50" {% if page_size == '50' %}selected{% endif %}>50</option>
+            </select>
+          </div>
           
-          {% for num in page_obj.paginator.page_range %}
-          {% if page_obj.number == num %}
-          <button class="px-3 py-1 border border-primary bg-primary text-white rounded-md text-sm hover:bg-blue-700">{{ num }}</button>
-          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-          <a href="?page={{ num }}&page_size={{ page_size }}{% if selected_community %}&community={{ selected_community }}{% endif %}{% if selected_estate %}&estate={{ selected_estate }}{% endif %}{% if selected_hutong %}&hutong={{ selected_hutong }}{% endif %}{% if selected_address_type %}&address_type={{ selected_address_type }}{% endif %}{% if selected_is_resident %}&is_resident={{ selected_is_resident }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
-             class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">{{ num }}</a>
-          {% endif %}
-          {% endfor %}
-          
-          {% if page_obj.has_next %}
-          <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}{% if selected_community %}&community={{ selected_community }}{% endif %}{% if selected_estate %}&estate={{ selected_estate }}{% endif %}{% if selected_hutong %}&hutong={{ selected_hutong }}{% endif %}{% if selected_address_type %}&address_type={{ selected_address_type }}{% endif %}{% if selected_is_resident %}&is_resident={{ selected_is_resident }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
-             class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-            下一页
-          </a>
-          {% else %}
-          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                  disabled>
-            下一页
-          </button>
-          {% endif %}
+          <!-- 页码导航 -->
+          <div class="flex items-center space-x-1">
+            {% if page_obj.has_previous %}
+            <a href="#" onclick="refreshAddresses({{ page_obj.previous_page_number }}); return false;"
+               class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+              上一页
+            </a>
+            {% else %}
+            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                    disabled>
+              上一页
+            </button>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <button class="px-3 py-1 border border-primary bg-primary text-white rounded-md text-sm hover:bg-blue-700">{{ num }}</button>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <a href="#" onclick="refreshAddresses({{ num }}); return false;"
+               class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">{{ num }}</a>
+            {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <a href="#" onclick="refreshAddresses({{ page_obj.next_page_number }}); return false;"
+               class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+              下一页
+            </a>
+            {% else %}
+            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                    disabled>
+              下一页
+            </button>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>
@@ -228,11 +226,68 @@
 <script>
   function changePageSize() {
     const pageSize = document.getElementById('page_size').value;
-    // 保持当前筛选条件，只改变每页显示条数
-    const currentUrl = new URL(window.location.href);
-    currentUrl.searchParams.set('page', '1'); // 改变每页显示条数时，回到第一页
-    currentUrl.searchParams.set('page_size', pageSize);
-    window.location.href = currentUrl.href;
+    refreshAddresses(1, { page_size: pageSize });
+  }
+
+  function refreshAddresses(page = 1, additionalParams = {}) {
+    // 保存当前选择的筛选值
+    const communityId = document.getElementById('community').value;
+    const estateId = document.getElementById('estate').value;
+    const hutongId = document.getElementById('hutong').value;
+    
+    // 构建表单数据
+    const formData = new FormData(document.getElementById('address-filter-form'));
+    
+    // 添加分页和其他参数
+    formData.set('page', page);
+    formData.set('page_size', document.getElementById('page_size').value);
+    
+    // 添加额外参数
+    for (const [key, value] of Object.entries(additionalParams)) {
+      formData.set(key, value);
+    }
+    
+    // 构建URL参数
+    const params = new URLSearchParams(formData);
+    
+    // 发送AJAX请求
+    fetch(window.location.pathname + '?' + params, {
+      method: 'GET',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.text();
+    })
+    .then(html => {
+      // 创建临时DOM元素来解析HTML
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+      
+      // 更新地址列表容器
+      const newContainer = tempDiv.querySelector('#addresses-container');
+      if (newContainer) {
+        const currentContainer = document.getElementById('addresses-container');
+        currentContainer.innerHTML = newContainer.innerHTML;
+      }
+      
+      // 重新初始化小区和胡同选择框
+      if (communityId) {
+        // 保存当前选择的小区和胡同
+        document.getElementById('estate').setAttribute('data-selected', estateId);
+        document.getElementById('hutong').setAttribute('data-selected', hutongId);
+        updateEstatesAndHutongs();
+      }
+    })
+    .catch(error => {
+      console.error('刷新地址列表失败:', error);
+      // 失败时回退到页面重载
+      window.location.href = window.location.pathname + '?' + params;
+    });
   }
 
   function updateEstatesAndHutongs() {
@@ -257,6 +312,11 @@
             option.textContent = estate.name;
             estateSelect.appendChild(option);
           });
+          // 重新选择之前的小区（如果有）
+          const selectedEstate = document.getElementById('estate').getAttribute('data-selected');
+          if (selectedEstate) {
+            document.getElementById('estate').value = selectedEstate;
+          }
         })
         .catch(error => {
           console.error('获取小区数据失败:', error);
@@ -273,6 +333,11 @@
             option.textContent = hutong.name;
             hutongSelect.appendChild(option);
           });
+          // 重新选择之前的胡同（如果有）
+          const selectedHutong = document.getElementById('hutong').getAttribute('data-selected');
+          if (selectedHutong) {
+            document.getElementById('hutong').value = selectedHutong;
+          }
         })
         .catch(error => {
           console.error('获取胡同数据失败:', error);
@@ -281,13 +346,16 @@
   }
 
   function resetFilters() {
-    // 重置所有筛选条件，保持当前分页设置
-    const currentUrl = new URL(window.location.href);
-    const pageSize = currentUrl.searchParams.get('page_size') || '10';
-
-    // 构建新的URL，只包含分页参数
-    const newUrl = `${currentUrl.origin}${currentUrl.pathname}?page=1&page_size=${pageSize}`;
-    window.location.href = newUrl;
+    // 重置所有筛选条件
+    document.getElementById('search_query').value = '';
+    document.getElementById('community').value = '';
+    document.getElementById('estate').innerHTML = '<option value="">所有小区</option>';
+    document.getElementById('hutong').innerHTML = '<option value="">所有胡同</option>';
+    document.getElementById('address_type').value = '';
+    document.getElementById('is_resident').value = '';
+    
+    // 刷新列表
+    refreshAddresses(1);
   }
   
   // 页面加载时初始化
@@ -297,6 +365,13 @@
     if (communityId) {
       updateEstatesAndHutongs();
     }
+    
+    // 添加表单提交事件监听
+    const filterForm = document.getElementById('address-filter-form');
+    filterForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      refreshAddresses(1);
+    });
   });
 </script>
 <script src="{% static 'js/addresses.js' %}"></script>

@@ -87,7 +87,7 @@
           <li>
             <a href="/dashboard/" class="nav-link" data-target="dashboard">
               <i class="fa fa-dashboard w-6 text-center"></i>
-              <span class="ml-3 nav-text">仪表盘</span>
+              <span class="ml-3 nav-text">首页</span>
             </a>
           </li>
           <li>
@@ -160,7 +160,17 @@
                 <span class="text-sm font-medium text-gray-700 hidden sm:inline">
                   {{ request.user.userprofile.get_department_display }}</span>
                 <span class="text-sm font-medium text-gray-700 hidden sm:inline">
-                  {{ request.user.userprofile.name }}</span>
+                  {% with social_worker=request.user.userprofile.socialworker %}
+                    {% if social_worker %}
+                      {{ social_worker.name }}
+                    {% endif %}
+                  {% endwith %}
+                  {% with cadre=request.user.userprofile.cadre %}
+                    {% if cadre %}
+                      {{ cadre.name }}
+                    {% endif %}
+                  {% endwith %}
+                </span>
                 <i class="fa fa-chevron-down text-gray-500 text-xs"></i>
               </button>
               <!-- 用户下拉菜单 -->
