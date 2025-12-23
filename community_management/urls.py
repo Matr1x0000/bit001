@@ -29,11 +29,11 @@ from api.views import (
     BuildingViewSet, UnitViewSet, ApartmentViewSet, HutongViewSet,
     SingleHouseViewSet, ResidentialAddressViewSet, UserProfileViewSet,
     ResidentViewSet, FamilyViewSet, NotificationViewSet,
-    NotificationReadViewSet, NotificationAttachmentViewSet, test_view, index,
-    dashboard, residents_view, families_view, notifications_view,
-    analytics_view, addresses_view, settings_view, test_auth, add_resident,
-    edit_resident, delete_resident, add_family, edit_family,
-    notification_read_status)
+    NotificationReadViewSet, NotificationAttachmentViewSet, index, dashboard,
+    residents_view, families_view, notifications_view, analytics_view,
+    addresses_view, add_resident, edit_resident, delete_resident, add_family,
+    edit_family, delete_family, notification_read_status, profile_view,
+    profile_update, get_unread_notifications_api)
 
 # 创建路由器并注册我们的视图集
 # 创建 DRF 默认路由器，用于自动注册视图集并生成对应的 RESTful API 路由
@@ -70,16 +70,20 @@ urlpatterns = [
     path('families/', families_view, name='families'),
     path('notifications/', notifications_view, name='notifications'),
     path('analytics/', analytics_view, name='analytics'),
-    path('settings/', settings_view, name='settings'),
-    path('test-auth/', test_auth, name='test_auth'),
-    # API routes
+    # API 路由
     path('api/', include(router.urls)),
-    # 测试路由
-    path('test/', test_view, name='test'),
     # 通知已读状态API
     path('api/notification-read-status/<int:notification_id>/',
          notification_read_status,
          name='notification_read_status'),
+    # 获取未读通知数量API
+    path('api/unread-notifications/',
+         get_unread_notifications_api,
+         name='unread_notifications'),
+    # 个人资料路由
+    path('profile/', profile_view, name='profile'),
+    # 个人资料更新路由
+    path('profile-update/', profile_update, name='profile_update'),
     # 添加居民路由
     path('add-resident/', add_resident, name='add_resident'),
     # 添加家庭路由
@@ -94,4 +98,7 @@ urlpatterns = [
     path('delete-resident/<int:resident_id>/',
          delete_resident,
          name='delete_resident'),
+    # 删除家庭路由
+    path('delete-family/<int:family_id>/', delete_family,
+         name='delete_family'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

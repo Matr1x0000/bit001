@@ -485,7 +485,7 @@ async function toggleNotificationReadStatus(button) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
             },
             body: 'action=read'
         });
@@ -630,12 +630,51 @@ function initializeNotificationDetails() {
     // 初始化删除按钮
     if (deleteButton) {
         deleteButton.addEventListener('click', function() {
-            showConfirmModal('确认删除', '确定要删除该通知吗？', function(confirmed) {
-                if (confirmed) {
-                    console.log('删除通知');
-                    showNotification('通知已删除', 'success');
-                }
-            });
+            // 确保按钮有正确的数据属性
+            const selectedItem = document.querySelector('.bg-blue-50.border-blue-200');
+            if (selectedItem) {
+                const notificationId = selectedItem.dataset.notificationId;
+                
+                showConfirmModal('确认删除', '确定要删除该通知吗？', async function(confirmed) {
+                    if (confirmed) {
+                        try {
+                            // 显示加载状态
+                            deleteButton.innerHTML = '<i class="fa fa-spinner fa-spin mr-1"></i> 删除中...';
+                            deleteButton.disabled = true;
+                            
+                            // 调用API删除通知
+                            const response = await fetch(`/api/notifications/${notificationId}/`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                                }
+                            });
+                            
+                            if (response.ok) {
+                                showNotification('通知已删除', 'success');
+                                
+                                // 3秒后刷新页面
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
+                            } else {
+                                const data = await response.json();
+                                // 使用showInfoModal显示删除失败提示，与删除家庭失败提示保持一致
+                                showInfoModal('删除失败', data.message || '您没有权限删除该通知', null, false, true);
+                            }
+                        } catch (error) {
+                            console.error('删除通知时发生错误:', error);
+                            showNotification('网络错误，请稍后重试', 'error');
+                        } finally {
+                            deleteButton.innerHTML = '<i class="fa fa-trash mr-1"></i> 删除';
+                            deleteButton.disabled = false;
+                        }
+                    }
+                });
+            } else {
+                console.error('未找到选中的通知项，无法获取通知ID');
+                showNotification('请先选择一个通知', 'error');
+            }
         });
     }
 }
@@ -934,7 +973,7 @@ function initializePublishNotificationButton() {
         fetch('/api/notifications/', {
             method: 'POST',
             headers: {
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
             },
             body: formData
         })

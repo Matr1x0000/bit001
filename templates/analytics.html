@@ -3,17 +3,349 @@
 
 {% block title %}数据分析 - 社区居民信息管理系统{% endblock %}
 
-{% block page_title %}数据分析{% endblock %}
-
 {% block content %}
 <!-- 数据分析 -->
 <section id="analytics" class="page-section">
-  <!-- 预留空内容，准备填充新内容 -->
+  <!-- 统计数据 - 使用Django的json_script过滤器安全转换Python对象为JavaScript对象 -->
+  {{ statistics_data|json_script:"statistics-data" }}
+  {{ community_statistics|json_script:"community-statistics" }}
+  
+  <!-- 数据可视化模块 -->
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">人口统计数据可视化</h3>
+    
+    <!-- 三栏图表布局 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- 第一组：民族构成和年龄结构 -->
+      <div>
+        <h4 class="text-sm font-medium text-gray-700 mb-3">基本人口结构</h4>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button class="chart-tab px-3 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 text-sm" data-chart="nationality" data-group="1">民族构成</button>
+          <button class="chart-tab px-3 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm" data-chart="age" data-group="1">年龄结构</button>
+        </div>
+        <div class="relative h-80 mb-4">
+          <canvas id="statisticsChart1"></canvas>
+        </div>
+      </div>
+      
+      <!-- 第二组：性别分布和婚姻状况 -->
+      <div>
+        <h4 class="text-sm font-medium text-gray-700 mb-3">性别与婚姻</h4>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button class="chart-tab px-3 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 text-sm" data-chart="gender" data-group="2">性别分布</button>
+          <button class="chart-tab px-3 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm" data-chart="marital" data-group="2">婚姻状况</button>
+        </div>
+        <div class="relative h-80 mb-4">
+          <canvas id="statisticsChart2"></canvas>
+        </div>
+      </div>
+      
+      <!-- 第三组：政治面貌和学历层次 -->
+      <div>
+        <h4 class="text-sm font-medium text-gray-700 mb-3">政治与教育</h4>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button class="chart-tab px-3 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 text-sm" data-chart="political" data-group="3">政治面貌</button>
+          <button class="chart-tab px-3 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm" data-chart="education" data-group="3">学历层次</button>
+        </div>
+        <div class="relative h-80 mb-4">
+          <canvas id="statisticsChart3"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 社区数据列表模块 -->
   <div class="bg-white rounded-lg shadow-sm p-6">
-    <div class="text-center py-12">
-      <h2 class="text-2xl font-bold text-gray-800 mb-4">数据分析</h2>
-      <p class="text-gray-600">数据分析页面，内容将被填充</p>
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">社区统计数据列表</h3>
+    
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b cursor-pointer" data-sort="community_name">
+              社区名称 <i class="fa fa-sort ml-1"></i>
+            </th>
+            <th class="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b cursor-pointer" data-sort="total_population">
+              人口总数 <i class="fa fa-sort ml-1"></i>
+            </th>
+            <th class="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b cursor-pointer" data-sort="total_families">
+              总户数 <i class="fa fa-sort ml-1"></i>
+            </th>
+            <th class="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b cursor-pointer" data-sort="gender_ratio">
+              男女比例 <i class="fa fa-sort ml-1"></i>
+            </th>
+            <th class="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b cursor-pointer" data-sort="employment_ratio">
+              就业人口比 <i class="fa fa-sort ml-1"></i>
+            </th>
+            <th class="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b cursor-pointer" data-sort="empty_house_ratio">
+              空房比 <i class="fa fa-sort ml-1"></i>
+            </th>
+            <th class="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b cursor-pointer" data-sort="rented_ratio">
+              租户比 <i class="fa fa-sort ml-1"></i>
+            </th>
+            <th class="py-3 px-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider border-b cursor-pointer" data-sort="unmarried_ratio">
+              未婚人口比 <i class="fa fa-sort ml-1"></i>
+            </th>
+          </tr>
+        </thead>
+        <tbody id="communityTableBody" class="divide-y divide-gray-200">
+          {% for community in community_statistics %}
+          <tr class="hover:bg-gray-50 {% if community.is_total %}bg-gray-100 font-bold{% endif %}">
+            <td class="py-3 px-4 text-sm text-gray-800 font-medium">{{ community.community_name }}</td>
+            <td class="py-3 px-4 text-right text-sm text-gray-600">{{ community.total_population }}</td>
+            <td class="py-3 px-4 text-right text-sm text-gray-600">{{ community.total_families }}</td>
+            <td class="py-3 px-4 text-right text-sm text-gray-600">
+              {% if community.gender_ratio == 0 %}
+                1:0 
+              {% elif community.gender_ratio == 9999 %}
+                0:1 
+              {% else %}
+                1:{{ community.gender_ratio }} 
+              {% endif %}
+              {% if community.gender_male_count and community.gender_female_count %}
+                ({{ community.gender_male_count }}:{{ community.gender_female_count }})
+              {% elif community.gender_male_count %}
+                ({{ community.gender_male_count }}:0)
+              {% elif community.gender_female_count %}
+                (0:{{ community.gender_female_count }})
+              {% endif %}
+            </td>
+            <td class="py-3 px-4 text-right text-sm text-gray-600">
+              {{ community.employment_ratio }}% 
+              {% if community.employed_count and community.working_age_count %}
+                ({{ community.employed_count }})
+              {% endif %}
+            </td>
+            <td class="py-3 px-4 text-right text-sm text-gray-600">
+              {{ community.empty_house_ratio }}% 
+              {% if community.empty_houses and community.total_addresses %}
+                ({{ community.empty_houses }})
+              {% endif %}
+            </td>
+            <td class="py-3 px-4 text-right text-sm text-gray-600">
+              {{ community.rented_ratio }}% 
+              {% if community.rented_houses and community.total_addresses %}
+                ({{ community.rented_houses }})
+              {% endif %}
+            </td>
+            <td class="py-3 px-4 text-right text-sm text-gray-600">
+              {{ community.unmarried_ratio }}% 
+              {% if community.unmarried_count and community.eligible_count %}
+                ({{ community.unmarried_count }})
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
 {% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // 从DOM中获取JSON数据并解析
+    const statisticsDataElement = document.getElementById('statistics-data');
+    const communityStatisticsElement = document.getElementById('community-statistics');
+    
+    const statisticsData = statisticsDataElement ? JSON.parse(statisticsDataElement.textContent) : {};
+    const communityStatistics = communityStatisticsElement ? JSON.parse(communityStatisticsElement.textContent) : [];
+    
+    // 图表配置模板
+    const chartConfigTemplate = {
+        type: 'pie',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+                    '#C9CBCF', '#45B7D1', '#F9690E', '#1ABC9C', '#3498DB', '#9B59B6',
+                    '#E74C3C', '#16A085', '#2980B9', '#8E44AD', '#C0392B', '#27AE60'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    };
+    
+    // 初始化图表实例存储
+    let chartInstances = {};
+    
+    // 切换图表
+    function switchChart(chartType, groupId) {
+        const data = statisticsData[chartType] || [];
+        
+        // 确保数据格式正确
+        const labels = data.map(item => item.name).filter(Boolean);
+        const values = data.map(item => item.value).filter(Number.isFinite);
+        
+        if (labels.length === 0 || values.length === 0) {
+            console.error('图表数据为空或格式错误:', data);
+            return;
+        }
+        
+        // 获取或创建图表配置
+        const chartConfig = JSON.parse(JSON.stringify(chartConfigTemplate));
+        chartConfig.data.labels = labels;
+        chartConfig.data.datasets[0].data = values;
+        
+        // 销毁旧图表实例
+        if (chartInstances[groupId]) {
+            chartInstances[groupId].destroy();
+        }
+        
+        // 创建新图表实例
+        const ctx = document.getElementById(`statisticsChart${groupId}`).getContext('2d');
+        chartInstances[groupId] = new Chart(ctx, chartConfig);
+        
+        // 更新同组按钮高亮样式
+        const groupButtons = document.querySelectorAll(`[data-group="${groupId}"]`);
+        groupButtons.forEach(tab => {
+            tab.classList.remove('bg-primary', 'text-white');
+            tab.classList.add('bg-gray-100', 'text-gray-700');
+        });
+        
+        // 高亮当前按钮
+        const activeTab = document.querySelector(`[data-chart="${chartType}"][data-group="${groupId}"]`);
+        if (activeTab) {
+            activeTab.classList.remove('bg-gray-100', 'text-gray-700');
+            activeTab.classList.add('bg-primary', 'text-white');
+        }
+    }
+    
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始化每个图表组
+        switchChart('nationality', 1); // 第一组：民族构成
+        switchChart('gender', 2);      // 第二组：性别分布
+        switchChart('political', 3);   // 第三组：政治面貌
+        
+        // 图表切换事件
+        document.querySelectorAll('.chart-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const chartType = tab.getAttribute('data-chart');
+                const groupId = tab.getAttribute('data-group');
+                switchChart(chartType, groupId);
+            });
+        });
+        
+        // 表格排序事件
+        document.querySelectorAll('th[data-sort]').forEach(th => {
+            th.addEventListener('click', () => {
+                const sortField = th.getAttribute('data-sort');
+                const icon = th.querySelector('i');
+                
+                // 切换排序方向
+                let sortOrder = 'asc';
+                if (icon.classList.contains('fa-sort-asc')) {
+                    sortOrder = 'desc';
+                    icon.className = 'fa fa-sort-desc ml-1';
+                } else if (icon.classList.contains('fa-sort-desc')) {
+                    sortOrder = 'asc';
+                    icon.className = 'fa fa-sort-asc ml-1';
+                } else {
+                    icon.className = 'fa fa-sort-asc ml-1';
+                }
+                
+                // 执行排序 - 使用已经解析好的communityStatistics变量
+                let sortedData = [...communityStatistics];
+                
+                // 排除总行
+                const totalRow = sortedData.find(row => row.is_total);
+                const normalRows = sortedData.filter(row => !row.is_total);
+                
+                // 排序
+                normalRows.sort((a, b) => {
+                    if (sortOrder === 'asc') {
+                        return a[sortField] - b[sortField];
+                    } else {
+                        return b[sortField] - a[sortField];
+                    }
+                });
+                
+                // 重组数据
+                if (totalRow) {
+                    sortedData = [totalRow, ...normalRows];
+                } else {
+                    sortedData = normalRows;
+                }
+                
+                // 更新表格
+                const tbody = document.getElementById('communityTableBody');
+                tbody.innerHTML = '';
+                
+                sortedData.forEach(community => {
+                    const row = document.createElement('tr');
+                    row.className = `border-b border-gray-200 hover:bg-gray-50`;
+                    
+                    if (community.is_total) {
+                        row.className = `border-b border-gray-200 bg-gray-100 font-bold hover:bg-gray-50`;
+                    }
+                    
+                    // 构建表格行内容
+                    row.innerHTML = `
+                        <td class="py-3 px-4 text-sm text-gray-800 font-medium">${community.community_name}</td>
+                        <td class="py-3 px-4 text-right text-sm text-gray-600">${community.total_population}</td>
+                        <td class="py-3 px-4 text-right text-sm text-gray-600">${community.total_families}</td>
+                        <td class="py-3 px-4 text-right text-sm text-gray-600">
+                            ${community.gender_ratio === 0 ? '1:0' : 
+                              community.gender_ratio === 9999 ? '0:1' : 
+                              `1:${community.gender_ratio}`} 
+                            ${community.gender_male_count && community.gender_female_count ? 
+                              `(${community.gender_male_count}:${community.gender_female_count})` : 
+                              community.gender_male_count ? `(${community.gender_male_count}:0)` : 
+                              community.gender_female_count ? `(0:${community.gender_female_count})` : ''}
+                        </td>
+                        <td class="py-3 px-4 text-right text-sm text-gray-600">${community.employment_ratio}% 
+                            ${community.employed_count && community.working_age_count ? `(${community.employed_count})` : ''}
+                        </td>
+                        <td class="py-3 px-4 text-right text-sm text-gray-600">${community.empty_house_ratio}% 
+                            ${community.empty_houses && community.total_addresses ? `(${community.empty_houses})` : ''}
+                        </td>
+                        <td class="py-3 px-4 text-right text-sm text-gray-600">${community.rented_ratio}% 
+                            ${community.rented_houses && community.total_addresses ? `(${community.rented_houses})` : ''}
+                        </td>
+                        <td class="py-3 px-4 text-right text-sm text-gray-600">${community.unmarried_ratio}% 
+                            ${community.unmarried_count && community.eligible_count ? `(${community.unmarried_count})` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}
+
+{% block page_title %}数据分析{% endblock %}

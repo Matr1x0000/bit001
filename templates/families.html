@@ -26,10 +26,12 @@
             <i class="fa fa-search mr-2"></i> 搜索
           </button>
           
+          {% if permissions.ADD_FAMILY %}
           <a href="/add-family/"
             class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center text-sm">
             <i class="fa fa-plus mr-2"></i> 添加家庭
           </a>
+          {% endif %}
         </div>
       </div>
 
@@ -99,13 +101,20 @@
             <tr class="hover:bg-gray-50 transition-colors">
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ family.household_number }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ family.owner_name }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.residential_address|default:"-" }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 cursor-pointer hover:text-blue-500" onclick="location.href='/addresses/?address_id={{ family.residential_address.id|default:'' }}'">
+                {{ family.residential_address|default:"-" }}
+              </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.contact_phone|default:"-" }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.updated_at|date:"Y-m-d H:i:s" }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.remark|default:"-" }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <a href="/residents/?family_id={{ family.id }}" class="text-primary hover:text-blue-700 mr-3">查看居民</a>
+                {% if permissions.EDIT_FAMILY %}
                 <a href="/edit-family/{{ family.id }}/" class="text-gray-600 hover:text-gray-900 mr-3">编辑</a>
+                {% endif %}
+                {% if permissions.DELETE_FAMILY %}
+                <a href="/delete-family/{{ family.id }}/" onclick="event.preventDefault(); deleteFamily('{{ family.id }}')" class="text-red-600 hover:text-red-900">删除</a>
+                {% endif %}
               </td>
             </tr>
             {% empty %}
@@ -297,6 +306,38 @@
           console.error('获取胡同数据失败:', error);
         });
     }
+  }
+  
+  // 删除家庭函数
+  function deleteFamily(familyId) {
+    // 显示确认对话框
+    showConfirmModal('确认删除', '确定要删除该家庭吗？删除后该家庭下的所有居民信息将无法正常查看。', function(confirmed) {
+      if (confirmed) {
+        // 执行删除操作
+        fetch(`/delete-family/${familyId}/`, {
+          method: 'GET',
+          headers: {
+            'X-CSRFToken': document.querySelector('[name=csrf-token]').getAttribute('content'),
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // 刷新家庭列表
+            refreshFamilies();
+          } else {
+            // 显示错误信息弹窗，使用更醒目的样式
+            showInfoModal('删除失败', data.message || '删除失败，请稍后重试', null, false, true);
+          }
+        })
+        .catch(error => {
+          console.error('删除家庭失败:', error);
+          // 显示错误信息弹窗，使用更醒目的样式
+          showInfoModal('删除失败', '删除家庭失败，请稍后重试', null, false, true);
+        });
+      }
+    });
   }
 </script>
 {% endblock %}

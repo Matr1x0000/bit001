@@ -32,23 +32,50 @@
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files>
-      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_notification" />
-      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_notificationattachment" />
-      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_notificationread" />
-      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="consoles/Connection" />
+      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_family" />
+      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_resident" />
     </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" />
   </component>
   <component name="DBNavigator.Project.DatasetFilterManager">
+    <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.api_hutong" active-filter-id="771ff8af-0aed-465b-939a-d7baeb497360">
+      <filter id="771ff8af-0aed-465b-939a-d7baeb497360" name="11" temporary="false" custom-name="false" type="basic" join-type="AND">
+        <condition column="community_id" operator="=" value="11" active="true" />
+      </filter>
+    </filter-actions>
     <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.api_notification" active-filter-id="">
       <filter id="da027809-e659-4f93-9839-c0d6361bb166" name="Filter" temporary="false" custom-name="false" type="basic" join-type="AND">
         <condition column="id" operator="=" value="" active="true" />
       </filter>
     </filter-actions>
-    <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.api_notificationread" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.api_residentialaddress" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.auth_user" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.api_family" active-filter-id="0522902a-08c9-407b-a9c6-8f1e3cc40120">
+      <filter id="bbc11f9a-5f0a-4294-8809-5846f8806136" name="Filter" temporary="false" custom-name="false" type="basic" join-type="AND">
+        <condition column="residential_address_id" operator="is null" value="" active="true" />
+      </filter>
+      <filter id="0522902a-08c9-407b-a9c6-8f1e3cc40120" name="1" temporary="false" custom-name="false" type="basic" join-type="AND">
+        <condition column="is_deleted" operator="=" value="1" active="true" />
+      </filter>
+    </filter-actions>
     <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.api_notificationattachment" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.api_userprofile" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.api_community" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.api_apartment" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.auth_permission" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.api_notificationread" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.api_housingestate" active-filter-id="bcacaaed-c9b9-415c-9775-9c15646c7ea6">
+      <filter id="bcacaaed-c9b9-415c-9775-9c15646c7ea6" name="11" temporary="false" custom-name="false" type="basic" join-type="AND">
+        <condition column="community_id" operator="=" value="11" active="true" />
+      </filter>
+    </filter-actions>
+    <filter-actions connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" dataset="db.api_resident" active-filter-id="876be8cf-d9a3-4a13-a103-11b013242ef2">
+      <filter id="876be8cf-d9a3-4a13-a103-11b013242ef2" name="0" temporary="false" custom-name="false" type="basic" join-type="AND">
+        <condition column="is_deleted" operator="!=" value="0" active="true" />
+      </filter>
+    </filter-actions>
   </component>
   <component name="DBNavigator.Project.ExecutionManager">
     <retain-sticky-names value="false" />

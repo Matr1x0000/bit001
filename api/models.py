@@ -20,6 +20,10 @@ class Community(models.Model):
                                     blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(default=False,
+                                     verbose_name="是否已删除",
+                                     db_index=True)
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
@@ -60,6 +64,10 @@ class SocialWorker(models.Model):
                                    verbose_name="是否在职（True:在职, False:离职）")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(default=False,
+                                     verbose_name="是否已删除",
+                                     db_index=True)
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
@@ -68,7 +76,13 @@ class SocialWorker(models.Model):
         verbose_name_plural = "2.社区工作者列表"
 
     def __str__(self):
-        return f" {self.community.name} - {self.name}({self.gender}) - {self.phone}"
+        # 格式化性别显示
+        gender_display = "男" if self.gender == 1 else "女" if self.gender == 2 else "未知"
+        # 书记标识
+        secretary_tag = " (书记)" if self.is_secretary else ""
+        # 所属社区名称
+        community_name = self.community.name if self.community else "未分配社区"
+        return f"{community_name} - {self.name}{secretary_tag} ({gender_display})"
 
 
 # 小区模型
@@ -95,6 +109,10 @@ class HousingEstate(models.Model):
                                       blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(default=False,
+                                     verbose_name="是否已删除",
+                                     db_index=True)
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
@@ -127,6 +145,10 @@ class Building(models.Model):
                                           blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(default=False,
+                                     verbose_name="是否已删除",
+                                     db_index=True)
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
@@ -148,6 +170,10 @@ class Unit(models.Model):
     name = models.CharField(max_length=10, verbose_name="单元名称/编号")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(default=False,
+                                     verbose_name="是否已删除",
+                                     db_index=True)
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
@@ -169,6 +195,10 @@ class Apartment(models.Model):
     house_number = models.CharField(max_length=10, verbose_name="房号")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(default=False,
+                                     verbose_name="是否已删除",
+                                     db_index=True)
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
@@ -192,6 +222,10 @@ class Hutong(models.Model):
                                   verbose_name="所属社区")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(default=False,
+                                     verbose_name="是否已删除",
+                                     db_index=True)
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
@@ -213,6 +247,10 @@ class SingleHouse(models.Model):
     house_number = models.CharField(max_length=10, verbose_name="房号")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(default=False,
+                                     verbose_name="是否已删除",
+                                     db_index=True)
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
@@ -274,6 +312,10 @@ class ResidentialAddress(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(default=False,
+                                     verbose_name="是否已删除",
+                                     db_index=True)
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
@@ -305,9 +347,13 @@ class UserProfile(models.Model):
                                           default=3,
                                           verbose_name="部门")
     is_baned = models.BooleanField(default=True,
-                                   verbose_name="是否在职（True:在职, False:离职）")
+                                   verbose_name="账户状态（True:正常, False:禁用）")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(default=False,
+                                     verbose_name="是否已删除",
+                                     db_index=True)
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
@@ -346,6 +392,10 @@ class Cadre(models.Model):
                                    verbose_name="是否在职（True:在职, False:离职）")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(default=False,
+                                     verbose_name="是否已删除",
+                                     db_index=True)
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
@@ -434,6 +484,10 @@ class Resident(models.Model):
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(default=False,
+                                     verbose_name="是否已删除",
+                                     db_index=True)
 
     class Meta:
         verbose_name = "1.居民"
@@ -465,6 +519,10 @@ class Family(models.Model):
                                      blank=True)
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(default=False,
+                                     verbose_name="是否已删除",
+                                     db_index=True)
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
@@ -484,35 +542,70 @@ class Family(models.Model):
 
 
 class Notification(models.Model):
+    """通知模型
+    
+    用于存储通知信息，包括标题、内容、发布者、发布时间等。
+    支持紧急、普通、活动三种通知类型。
+    """
+    # 通知类型选择：1-紧急，2-普通，3-活动
     NOTIFICATION_TYPE_CHOICES = [(1, "紧急"), (2, "普通"), (3, "活动")]
+    # 通知时间类型选择：1-长期，2-定期
     NOTIFICATION_TIME_TYPE_CHOICES = [(1, "长期"), (2, "定期")]
+    
+    # 通知标题，必填字段
     title = models.CharField(max_length=100, verbose_name="通知标题")
+    # 通知内容，必填字段
     content = models.TextField(verbose_name="通知内容")
+    # 通知类型，必填字段
     notification_type = models.SmallIntegerField(
         choices=NOTIFICATION_TYPE_CHOICES, verbose_name="通知类型")
-    publisher = models.ForeignKey(User,
-                                  on_delete=models.CASCADE,
-                                  verbose_name="发布人")
+    # 发布人，外键关联，用户删除时级联删除
+    publisher = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="发布人"
+    )
+    # 发布时间，自动生成
     publish_time = models.DateTimeField(auto_now_add=True, verbose_name="发布时间")
+    # 通知时间类型，默认值为1（长期）
     notification_time_type = models.SmallIntegerField(
         default=1,
         choices=NOTIFICATION_TIME_TYPE_CHOICES,
-        verbose_name="通知时间类型")
-    valid_until = models.DateTimeField(verbose_name="有效期至",
-                                       blank=True,
-                                       null=True)
+        verbose_name="通知时间类型"
+    )
+    # 有效期至，可选字段
+    valid_until = models.DateTimeField(
+        verbose_name="有效期至",
+        blank=True,
+        null=True
+    )
+    # 阅读次数，默认值为0
     view_count = models.IntegerField(default=0, verbose_name="阅读次数")
+    # 创建时间，自动生成
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    # 更新时间，自动更新
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(
+        default=False,
+        verbose_name="是否已删除",
+        db_index=True
+    )
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
     class Meta:
-        verbose_name = "2. 通知"  # 添加序号来控制顺序
-        verbose_name_plural = "2. 通知列表"
-        ordering = ['-publish_time']
+        """模型元数据配置"""
+        verbose_name = "2. 通知"  # 管理后台显示名称
+        verbose_name_plural = "2. 通知列表"  # 管理后台复数显示名称
+        ordering = ['-publish_time']  # 按发布时间降序排序
 
     def __str__(self):
+        """对象字符串表示
+        
+        Returns:
+            str: 格式化的通知信息，格式为"***通知类型***通知标题 - 发布时间"
+        """
         return f"***{self.notification_type}***{self.title} - {self.publish_time}"
 
 
@@ -523,7 +616,19 @@ from django.utils import timezone
 
 
 def upload_to_notification_attachments(instance, filename):
-    """自定义附件上传路径和文件名，防止重名"""
+    """自定义附件上传路径和文件名，防止重名
+    
+    Args:
+        instance: NotificationAttachment实例
+        filename: 原始文件名
+        
+    Returns:
+        str: 完整的上传路径，格式为"notification_attachments/时间戳.扩展名"
+        
+    示例:
+        >>> upload_to_notification_attachments(attachment_instance, "document.pdf")
+        'notification_attachments/20230510143025123456.pdf'
+    """
     # 获取文件扩展名
     ext = os.path.splitext(filename)[1]
     # 使用时间戳和随机数生成唯一文件名
@@ -534,52 +639,111 @@ def upload_to_notification_attachments(instance, filename):
 
 
 class NotificationAttachment(models.Model):
-    notification = models.ForeignKey(Notification,
-                                     on_delete=models.CASCADE,
-                                     verbose_name="关联通知",
-                                     related_name="attachments")
-    file = models.FileField(upload_to=upload_to_notification_attachments,
-                            verbose_name="附件文件")
+    """通知附件模型
+    
+    用于存储通知的附件文件信息，包括文件名、上传时间等。
+    每个通知可以关联多个附件。
+    """
+    # 关联通知，外键关联，通知删除时级联删除
+    # related_name="attachments"允许通过notification.attachments访问附件列表
+    notification = models.ForeignKey(
+        Notification,
+        on_delete=models.CASCADE,
+        verbose_name="关联通知",
+        related_name="attachments"
+    )
+    # 附件文件，上传到指定路径
+    file = models.FileField(
+        upload_to=upload_to_notification_attachments,
+        verbose_name="附件文件"
+    )
+    # 原始文件名，用于显示
     filename = models.CharField(max_length=255, verbose_name="原始文件名")
-    description = models.CharField(max_length=255,
-                                   blank=True,
-                                   null=True,
-                                   verbose_name="附件描述")
+    # 附件描述，可选字段
+    description = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="附件描述"
+    )
+    # 上传时间，自动生成
     upload_time = models.DateTimeField(auto_now_add=True, verbose_name="上传时间")
+    # 创建时间，自动生成
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    # 更新时间，自动更新
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(
+        default=False,
+        verbose_name="是否已删除",
+        db_index=True
+    )
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
     class Meta:
-        verbose_name = "3. 通知附件"  # 添加序号来控制顺序
-        verbose_name_plural = "3. 通知附件列表"
+        """模型元数据配置"""
+        verbose_name = "3. 通知附件"  # 管理后台显示名称
+        verbose_name_plural = "3. 通知附件列表"  # 管理后台复数显示名称
 
     def __str__(self):
+        """对象字符串表示
+        
+        Returns:
+            str: 格式化的附件信息，格式为"通知标题 - 原始文件名"
+        """
         return f"{self.notification.title} - {self.filename}"
 
 
-# 通知阅读状态模型
-
-
 class NotificationRead(models.Model):
-    notification = models.ForeignKey(Notification,
-                                     on_delete=models.CASCADE,
-                                     verbose_name="通知")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="用户")
+    """通知阅读状态模型
+    
+    用于记录用户对通知的阅读状态，包括是否已读、阅读时间等。
+    每个用户对每个通知只有一条阅读记录。
+    """
+    # 通知，外键关联，通知删除时级联删除
+    notification = models.ForeignKey(
+        Notification,
+        on_delete=models.CASCADE,
+        verbose_name="通知"
+    )
+    # 用户，外键关联，用户删除时级联删除
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        verbose_name="用户"
+    )
+    # 是否已读，默认值为False（未读）
     is_read = models.BooleanField(default=False, verbose_name="是否已读")
-    read_time = models.DateTimeField(null=True,
-                                     blank=True,
-                                     verbose_name="阅读时间")
+    # 阅读时间，可选字段，阅读时自动填充
+    read_time = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="阅读时间"
+    )
+    # 创建时间，自动生成
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    # 更新时间，自动更新
     updated_at = models.DateTimeField(auto_now=True, verbose_name="更新时间")
+    # 逻辑删除字段，0表示正常，1表示已删除
+    is_deleted = models.BooleanField(
+        default=False,
+        verbose_name="是否已删除",
+        db_index=True
+    )
     # 备注字段
     remark = models.TextField(verbose_name="备注", blank=True, null=True)
 
     class Meta:
-        verbose_name = "4. 通知阅读状态"  # 更新序号来控制顺序
-        verbose_name_plural = "4. 通知阅读状态列表"
-        unique_together = ('notification', 'user')
+        """模型元数据配置"""
+        verbose_name = "4. 通知阅读状态"  # 管理后台显示名称
+        verbose_name_plural = "4. 通知阅读状态列表"  # 管理后台复数显示名称
+        unique_together = ('notification', 'user')  # 每个用户对每个通知只有一条记录
 
     def __str__(self):
+        """对象字符串表示
+        
+        Returns:
+            str: 格式化的阅读状态信息
+        """
         return f"{self.is_read} - {self.user.username} - {self.read_time} - {self.notification.title}"

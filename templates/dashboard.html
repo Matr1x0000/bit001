@@ -6,28 +6,28 @@
 {% block extra_js %}
 <script>
 function toggleSort(field) {
-    // 获取当前排序参数
-    const currentSortField = '{{ sort_field|default:"name" }}';
-    const currentSortOrder = '{{ sort_order|default:"asc" }}';
+    // 从当前URL获取排序状态
+    const params = new URLSearchParams(window.location.search);
+    const currentSortField = params.get('sort_field');
+    const currentSortOrder = params.get('sort_order') || 'asc';
     
     // 计算新的排序参数
     let newSortOrder = 'asc';
+    let newSortField = field;
+    
     if (currentSortField === field) {
         if (currentSortOrder === 'asc') {
             newSortOrder = 'desc';
         } else {
             // 第三次点击恢复默认排序
-            refreshContacts({
-                sort_field: undefined,
-                sort_order: undefined
-            });
-            return;
+            newSortField = null;
+            newSortOrder = null;
         }
     }
     
     // 刷新联系人列表
     refreshContacts({
-        sort_field: field,
+        sort_field: newSortField,
         sort_order: newSortOrder
     });
 }
@@ -56,8 +56,22 @@ function refreshContacts(additionalParams = {}) {
     // 合并参数
     const newParams = { ...currentParams, ...additionalParams };
     
+    // 过滤掉null或undefined值的参数
+    const filteredParams = {};
+    for (const [key, value] of Object.entries(newParams)) {
+        if (value !== null && value !== undefined) {
+            filteredParams[key] = value;
+        }
+    }
+    
+    // 构建新的URL
+    const newUrl = window.location.pathname + '?' + new URLSearchParams(filteredParams);
+    
+    // 更新浏览器URL，不刷新页面
+    window.history.replaceState({}, '', newUrl);
+    
     // 发送AJAX请求
-    fetch(window.location.pathname + '?' + new URLSearchParams(newParams))
+    fetch(newUrl)
         .then(response => response.text())
         .then(html => {
             // 创建临时容器解析HTML
@@ -73,7 +87,7 @@ function refreshContacts(additionalParams = {}) {
         .catch(error => {
             console.error('刷新通讯录失败:', error);
             // 失败时回退到完整页面刷新
-            window.location.href = window.location.pathname + '?' + new URLSearchParams(newParams);
+            window.location.href = newUrl;
         });
 }
 

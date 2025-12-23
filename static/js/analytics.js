@@ -62,8 +62,11 @@ async function loadAnalyticsData() {
 
 // 更新分析数据
 function updateAnalyticsData() {
-    const building = document.querySelector('select:nth-of-type(1)').value;
-    const time = document.querySelector('select:nth-of-type(2)').value;
+    const select1 = document.querySelector('select:nth-of-type(1)');
+    const select2 = document.querySelector('select:nth-of-type(2)');
+    
+    const building = select1 ? select1.value : '';
+    const time = select2 ? select2.value : '';
     
     console.log('更新分析数据:', { building, time });
     
@@ -666,8 +669,11 @@ async function loadAnalyticsData() {
 
 // 更新分析数据
 async function updateAnalyticsData() {
-    const building = document.querySelector('select:nth-of-type(1)').value;
-    const time = document.querySelector('select:nth-of-type(2)').value;
+    const select1 = document.querySelector('select:nth-of-type(1)');
+    const select2 = document.querySelector('select:nth-of-type(2)');
+    
+    const building = select1 ? select1.value : '';
+    const time = select2 ? select2.value : '';
     
     console.log('更新分析数据:', { building, time });
     
@@ -686,10 +692,18 @@ async function updateAnalyticsData() {
     }
 }
 
+// 查找包含特定文本的元素
+function findElementByText(selector, text) {
+    const elements = document.querySelectorAll(selector);
+    return Array.from(elements).find(element => 
+        element.textContent.trim().includes(text)
+    );
+}
+
 // 初始化导出功能
 function initializeExportFunctions() {
-    const exportReportButton = document.querySelector('button:contains("导出报告")');
-    const exportCSVButton = document.querySelector('button:contains("导出CSV")');
+    const exportReportButton = findElementByText('button', '导出报告');
+    const exportCSVButton = findElementByText('button', '导出CSV');
     
     if (exportReportButton) {
         exportReportButton.addEventListener('click', function() {

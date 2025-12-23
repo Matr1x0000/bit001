@@ -1,5 +1,13 @@
 // 地址管理页面专用JavaScript
 
+// 查找包含特定文本的元素
+function findElementByText(selector, text) {
+    const elements = document.querySelectorAll(selector);
+    return Array.from(elements).find(element => 
+        element.textContent.trim().includes(text)
+    );
+}
+
 // 初始化地址管理功能
 function initializeAddressManagement() {
     // 初始化筛选器功能
@@ -16,8 +24,9 @@ function initializeAddressManagement() {
 function initializeAddressFilters() {
     const searchInput = document.querySelector('input[type="text"]');
     const selectElements = document.querySelectorAll('select');
-    const filterButton = document.querySelector('button:contains("筛选")');
-    const resetButton = document.querySelector('button:contains("重置")');
+    
+    const filterButton = findElementByText('button', '筛选');
+    const resetButton = findElementByText('button', '重置');
     
     // 搜索输入框事件监听
     if (searchInput) {
@@ -52,10 +61,15 @@ function initializeAddressFilters() {
 
 // 应用地址筛选器
 function applyAddressFilters() {
-    const searchTerm = document.querySelector('input[type="text"]').value;
-    const community = document.querySelector('select:nth-of-type(1)').value;
-    const building = document.querySelector('select:nth-of-type(2)').value;
-    const unit = document.querySelector('select:nth-of-type(3)').value;
+    const searchInput = document.querySelector('input[type="text"]');
+    const select1 = document.querySelector('select:nth-of-type(1)');
+    const select2 = document.querySelector('select:nth-of-type(2)');
+    const select3 = document.querySelector('select:nth-of-type(3)');
+    
+    const searchTerm = searchInput ? searchInput.value : '';
+    const community = select1 ? select1.value : '';
+    const building = select2 ? select2.value : '';
+    const unit = select3 ? select3.value : '';
     
     console.log('应用地址筛选器:', { searchTerm, community, building, unit });
     
@@ -100,7 +114,7 @@ function initializeAddressList() {
     
     addressRows.forEach(row => {
         // 查看按钮事件监听
-        const viewButton = row.querySelector('a:contains("查看")');
+        const viewButton = findElementByText('a', '查看');
         if (viewButton) {
             viewButton.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -109,7 +123,7 @@ function initializeAddressList() {
         }
         
         // 编辑按钮事件监听
-        const editButton = row.querySelector('a:contains("编辑")');
+        const editButton = findElementByText('a', '编辑');
         if (editButton) {
             editButton.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -118,7 +132,7 @@ function initializeAddressList() {
         }
         
         // 删除按钮事件监听
-        const deleteButton = row.querySelector('a:contains("删除")');
+        const deleteButton = findElementByText('a', '删除');
         if (deleteButton) {
             deleteButton.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -190,7 +204,7 @@ function toggleSelectAllAddresses(checked) {
 
 // 初始化添加地址按钮
 function initializeAddAddressButton() {
-    const addButton = document.querySelector('button:contains("添加地址")');
+    const addButton = findElementByText('button', '添加地址');
     if (addButton) {
         addButton.addEventListener('click', function() {
             // 这里可以添加添加地址的逻辑

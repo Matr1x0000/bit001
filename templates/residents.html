@@ -26,11 +26,13 @@
             <i class="fa fa-search mr-2"></i> 搜索
           </button>
           
+          {% if permissions.ADD_RESIDENT %}
           <button id="add-resident-btn"
             type="button"
             class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center text-sm">
             <i class="fa fa-plus mr-2"></i> 添加居民
           </button>
+          {% endif %}
         </div>
       </div>
 
@@ -127,8 +129,12 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ resident.updated_at|date:"Y-m-d H:i:s" }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <button onclick="showOtherInfoModal('{{ resident.id }}', '{{ resident.remark|default:''|escapejs }}', '{{ resident.get_marital_status_display|default:''|escapejs }}', '{{ resident.get_education_display|default:''|escapejs }}', '{{ resident.job|yesno:"是,否"|escapejs }}', '{{ resident.is_dead|yesno:"是,否"|escapejs }}')" class="text-yellow-600 hover:text-yellow-900 mr-3">更多</button>
+                {% if permissions.EDIT_RESIDENT %}
                 <button onclick="showEditResidentModal('{{ resident.id }}')" class="text-gray-600 hover:text-gray-900 mr-3">编辑</button>
+                {% endif %}
+                {% if permissions.DELETE_RESIDENT %}
                 <a href="/delete-resident/{{ resident.id }}/" onclick="event.preventDefault(); deleteResident('{{ resident.id }}');" class="text-red-600 hover:text-red-900">删除</a>
+                {% endif %}
               </td>
             </tr>
             {% empty %}

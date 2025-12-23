@@ -1,4 +1,5 @@
 {% load static %}
+{% load permissions %}
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -12,8 +13,14 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Font Awesome -->
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <!-- Chart.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.8/chart.umd.min.js"></script>
+  <!-- Chart.js - 添加条件判断，仅当Chart未定义时才加载 -->
+  <script>
+    if (typeof Chart === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js';
+      document.head.appendChild(script);
+    }
+  </script>
   <!-- 统一的 Tailwind 配置 -->
   <script>
     tailwind.config = {
@@ -120,12 +127,6 @@
               <span class="ml-3 nav-text">数据分析</span>
             </a>
           </li>
-          <li>
-            <a href="/settings/" class="nav-link" data-target="settings">
-              <i class="fa fa-cog w-6 text-center"></i>
-              <span class="ml-3 nav-text">系统设置</span>
-            </a>
-          </li>
         </ul>
       </nav>
     </aside>
@@ -149,7 +150,7 @@
             <!-- 通知图标 -->
             <button id="notification-btn" class="relative text-gray-500 hover:text-primary focus:outline-none">
               <i class="fa fa-bell"></i>
-              <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+              <span id="notification-badge" class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full transform translate-x-1/2 -translate-y-1/2 hidden"></span>
             </button>
             <!-- 用户头像 -->
             <div class="relative">
@@ -175,8 +176,7 @@
               </button>
               <!-- 用户下拉菜单 -->
               <div id="user-dropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 hidden">
-                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">个人资料</a>
-                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">设置</a>
+                <a href="{% url 'profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">个人资料</a>
                 <div class="border-t border-gray-200 my-1"></div>
                 <a href="#" onclick="showLogoutModal(); return false;"
                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">退出登录</a>
@@ -224,6 +224,41 @@
   
   <!-- 额外的 JavaScript 文件 -->
   {% block extra_js %}{% endblock %}
+
+  <!-- 通知徽章动态更新脚本 -->
+  <script>
+    // 更新通知徽章显示状态
+    function updateNotificationBadge() {
+      fetch('/api/unread-notifications/')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          const badge = document.getElementById('notification-badge');
+          if (data.unread_count > 0) {
+            // 显示徽章
+            badge.classList.remove('hidden');
+          } else {
+            // 隐藏徽章
+            badge.classList.add('hidden');
+          }
+        })
+        .catch(error => {
+          console.error('获取未读通知数量失败:', error);
+        });
+    }
+
+    // 页面加载时立即执行一次
+    document.addEventListener('DOMContentLoaded', function() {
+      updateNotificationBadge();
+      
+      // 设置定期更新，每30秒执行一次
+      setInterval(updateNotificationBadge, 30000);
+    });
+  </script>
 </body>
 
 <!-- 确认弹窗组件 -->
@@ -407,11 +442,14 @@
   let infoCallback = null;
   
   // 显示信息弹窗
-  function showInfoModal(title, content, callback, isHtml = false) {
+  function showInfoModal(title, content, callback, isHtml = false, isError = false) {
     const modal = document.getElementById('info-modal');
     const modalContent = modal.querySelector('.bg-white');
     const modalTitle = document.getElementById('info-modal-title');
     const modalMessage = document.getElementById('info-modal-content');
+    // 获取弹窗头部，使用id或更稳定的选择器，而不是依赖于类名
+    const modalHeader = modalTitle.closest('div');
+    const modalOkBtn = document.getElementById('info-modal-ok');
     
     // 设置弹窗内容
     if (title) {
@@ -425,6 +463,19 @@
       modalMessage.innerHTML = (content || '').trim();
     } else {
       modalMessage.textContent = (content || '').trim();
+    }
+    
+    // 根据是否是错误弹窗调整样式
+    if (isError) {
+      // 设置错误弹窗样式
+      modalHeader.className = 'bg-danger text-white px-6 py-4 flex items-center justify-between';
+      modalMessage.className = 'text-red-700 mb-6 whitespace-pre-wrap overflow-x-auto';
+      modalOkBtn.className = 'px-6 py-2 bg-danger text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200';
+    } else {
+      // 设置默认样式
+      modalHeader.className = 'bg-primary text-white px-6 py-4 flex items-center justify-between';
+      modalMessage.className = 'text-gray-700 mb-6 whitespace-pre-wrap overflow-x-auto';
+      modalOkBtn.className = 'px-6 py-2 bg-primary text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-all duration-200';
     }
     
     // 保存回调函数
