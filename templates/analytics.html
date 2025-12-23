@@ -8,12 +8,281 @@
 {% block content %}
 <!-- 数据分析 -->
 <section id="analytics" class="page-section">
-  <!-- 预留空内容，准备填充新内容 -->
-  <div class="bg-white rounded-lg shadow-sm p-6">
-    <div class="text-center py-12">
-      <h2 class="text-2xl font-bold text-gray-800 mb-4">数据分析</h2>
-      <p class="text-gray-600">数据分析页面，内容将被填充</p>
+  <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+      <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+        <div>
+          <select
+            class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="all">全部楼栋</option>
+            <option value="1">1号楼</option>
+            <option value="2">2号楼</option>
+            <option value="3">3号楼</option>
+            <option value="4">4号楼</option>
+            <option value="5">5号楼</option>
+          </select>
+        </div>
+        <div>
+          <select
+            class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="all">全部时间</option>
+            <option value="2023">2023年</option>
+            <option value="2022">2022年</option>
+            <option value="2021">2021年</option>
+          </select>
+        </div>
+        <button
+          class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center">
+          <i class="fa fa-download mr-2"></i> 导出报告
+        </button>
+      </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div class="bg-blue-50 rounded-lg p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">总户数</p>
+            <p class="text-2xl font-bold text-gray-800">248</p>
+          </div>
+          <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+            <i class="fa fa-home text-primary text-xl"></i>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center">
+          <span class="text-green-500 text-sm font-medium flex items-center">
+            <i class="fa fa-arrow-up mr-1"></i> 3.2%
+          </span>
+          <span class="text-gray-500 text-sm ml-2">较上月</span>
+        </div>
+      </div>
+
+      <div class="bg-green-50 rounded-lg p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">总人数</p>
+            <p class="text-2xl font-bold text-gray-800">672</p>
+          </div>
+          <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+            <i class="fa fa-users text-success text-xl"></i>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center">
+          <span class="text-green-500 text-sm font-medium flex items-center">
+            <i class="fa fa-arrow-up mr-1"></i> 1.8%
+          </span>
+          <span class="text-gray-500 text-sm ml-2">较上月</span>
+        </div>
+      </div>
+
+      <div class="bg-yellow-50 rounded-lg p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">特殊人群</p>
+            <p class="text-2xl font-bold text-gray-800">42</p>
+          </div>
+          <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+            <i class="fa fa-heart text-warning text-xl"></i>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center">
+          <span class="text-red-500 text-sm font-medium flex items-center">
+            <i class="fa fa-arrow-down mr-1"></i> 0.5%
+          </span>
+          <span class="text-gray-500 text-sm ml-2">较上月</span>
+        </div>
+      </div>
+
+      <div class="bg-red-50 rounded-lg p-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-gray-500">出租率</p>
+            <p class="text-2xl font-bold text-gray-800">32.7%</p>
+          </div>
+          <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+            <i class="fa fa-building text-danger text-xl"></i>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center">
+          <span class="text-green-500 text-sm font-medium flex items-center">
+            <i class="fa fa-arrow-up mr-1"></i> 2.1%
+          </span>
+          <span class="text-gray-500 text-sm ml-2">较上月</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 图表区域 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- 年龄分布图 -->
+      <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-800">年龄分布</h3>
+          <div class="flex space-x-2">
+            <button class="text-gray-500 hover:text-primary focus:outline-none">
+              <i class="fa fa-download"></i>
+            </button>
+            <button class="text-gray-500 hover:text-primary focus:outline-none">
+              <i class="fa fa-ellipsis-v"></i>
+            </button>
+          </div>
+        </div>
+        <div class="h-80">
+          <canvas id="ageDistributionChart2"></canvas>
+        </div>
+      </div>
+
+      <!-- 性别比例图 -->
+      <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-800">性别比例</h3>
+          <div class="flex space-x-2">
+            <button class="text-gray-500 hover:text-primary focus:outline-none">
+              <i class="fa fa-download"></i>
+            </button>
+            <button class="text-gray-500 hover:text-primary focus:outline-none">
+              <i class="fa fa-ellipsis-v"></i>
+            </button>
+          </div>
+        </div>
+        <div class="h-80">
+          <canvas id="genderRatioChart2"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- 楼栋入住率 -->
+      <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-800">楼栋入住率</h3>
+          <div class="flex space-x-2">
+            <button class="text-gray-500 hover:text-primary focus:outline-none">
+              <i class="fa fa-download"></i>
+            </button>
+            <button class="text-gray-500 hover:text-primary focus:outline-none">
+              <i class="fa fa-ellipsis-v"></i>
+            </button>
+          </div>
+        </div>
+        <div class="h-80">
+          <canvas id="buildingOccupancyChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 特殊人群类型 -->
+      <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-800">特殊人群类型</h3>
+          <div class="flex space-x-2">
+            <button class="text-gray-500 hover:text-primary focus:outline-none">
+              <i class="fa fa-download"></i>
+            </button>
+            <button class="text-gray-500 hover:text-primary focus:outline-none">
+              <i class="fa fa-ellipsis-v"></i>
+            </button>
+          </div>
+        </div>
+        <div class="h-80">
+          <canvas id="specialPopulationChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- 入住趋势图 -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">入住趋势</h3>
+        <div class="flex space-x-2">
+          <button class="text-gray-500 hover:text-primary focus:outline-none">
+            <i class="fa fa-download"></i>
+          </button>
+          <button class="text-gray-500 hover:text-primary focus:outline-none">
+            <i class="fa fa-ellipsis-v"></i>
+          </button>
+        </div>
+      </div>
+      <div class="h-80">
+        <canvas id="occupancyTrendChart"></canvas>
+      </div>
+    </div>
+
+    <!-- 数据表格 -->
+    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-800">详细数据</h3>
+        <button class="text-primary hover:underline text-sm font-medium">导出CSV</button>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">楼栋</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">总户数</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">总人数</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">入住率</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">出租率</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">特殊人群</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr>
+              <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">1号楼</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">64</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">178</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">96.9%</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">28.1%</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">12</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">2号楼</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">48</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">132</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">93.8%</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">33.3%</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">8</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">3号楼</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">56</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">156</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">98.2%</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">25.0%</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">10</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">4号楼</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">40</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">108</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">95.0%</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">40.0%</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">6</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">5号楼</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">40</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">98</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">92.5%</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">37.5%</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">6</td>
+            </tr>
+            <tr class="bg-gray-50">
+              <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">总计</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">248</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">672</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">95.9%</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">32.7%</td>
+              <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">42</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/analytics.js' %}"></script>
 {% endblock %}

@@ -24,16 +24,17 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
-from api.views import (
-    CommunityViewSet, SocialWorkerViewSet, HousingEstateViewSet,
-    BuildingViewSet, UnitViewSet, ApartmentViewSet, HutongViewSet,
-    SingleHouseViewSet, ResidentialAddressViewSet, UserProfileViewSet,
-    ResidentViewSet, FamilyViewSet, NotificationViewSet,
-    NotificationReadViewSet, NotificationAttachmentViewSet, test_view, index,
-    dashboard, residents_view, families_view, notifications_view,
-    analytics_view, addresses_view, settings_view, test_auth, add_resident,
-    edit_resident, delete_resident, add_family, edit_family,
-    notification_read_status)
+from api.views import (CommunityViewSet, SocialWorkerViewSet,
+                       HousingEstateViewSet, BuildingViewSet, UnitViewSet,
+                       ApartmentViewSet, HutongViewSet, SingleHouseViewSet,
+                       ResidentialAddressViewSet, UserProfileViewSet,
+                       ResidentViewSet, FamilyViewSet, NotificationViewSet,
+                       NotificationReadViewSet, NotificationAttachmentViewSet,
+                       test_view, index, dashboard,
+                       residents_view, families_view, notifications_view,
+                       analytics_view, addresses_view, settings_view,
+                       test_auth, add_resident, edit_resident, delete_resident,
+                       add_family, edit_family, notification_read_status)
 
 # 创建路由器并注册我们的视图集
 # 创建 DRF 默认路由器，用于自动注册视图集并生成对应的 RESTful API 路由

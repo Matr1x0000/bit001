@@ -32,10 +32,10 @@
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files>
-      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="consoles/Connection" />
-      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_notificationread" />
       <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_notification" />
       <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_notificationattachment" />
+      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_notificationread" />
+      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="consoles/Connection" />
     </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">

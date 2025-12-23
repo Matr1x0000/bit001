@@ -205,197 +205,118 @@
         </div>
 
         <!-- 通知列表 -->
-        <div id="notifications-container">
-          <div class="space-y-4 max-h-[600px] overflow-y-auto">
-            {% for notification in notifications %}
-            <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
-              data-notification-id="{{ notification.id }}" 
-              data-title="{{ notification.title }}" 
-              data-type="{% if notification.notification_type == 1 %}紧急{% elif notification.notification_type == 2 %}普通{% elif notification.notification_type == 3 %}活动{% endif %}" 
-              data-content="{{ notification.content }}" 
-              data-date="{{ notification.publish_time|date:'Y-m-d H:i:s' }}" 
-              data-valid-until="{{ notification.valid_until|date:'Y-m-d H:i:s' }}" 
-              data-publisher="{{ notification.publisher.username }}" 
-              data-total="{{ notification.view_count }}" 
-              data-remark="{{ notification.remark|default:'' }}" 
-              data-is-read="{% if notification.id in user_read_notifications %}true{% else %}false{% endif %}">
-              <div class="flex items-start">
-                <div class="flex-shrink-0">
+        <div class="space-y-4 max-h-[600px] overflow-y-auto">
+          {% for notification in notifications %}
+          <div class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+            data-notification-id="{{ notification.id }}" 
+            data-title="{{ notification.title }}" 
+            data-type="{% if notification.notification_type == 1 %}紧急{% elif notification.notification_type == 2 %}普通{% elif notification.notification_type == 3 %}活动{% endif %}" 
+            data-content="{{ notification.content }}" 
+            data-date="{{ notification.publish_time|date:'Y-m-d H:i:s' }}" 
+            data-valid-until="{{ notification.valid_until|date:'Y-m-d H:i:s' }}" 
+            data-publisher="{{ notification.publisher.username }}" 
+            data-total="{{ notification.view_count }}" 
+            data-remark="{{ notification.remark|default:'' }}" 
+            data-is-read="{% if notification.id in user_read_notifications %}true{% else %}false{% endif %}">
+            <div class="flex items-start">
+              <div class="flex-shrink-0">
+              </div>
+              <div class="ml-0 flex-1">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-sm font-medium text-gray-900">{{ notification.title }}</h4>
+                  <span class="text-xs text-gray-500">{{ notification.publish_time|date:'Y-m-d H:i' }}</span>
                 </div>
-                <div class="ml-0 flex-1">
-                  <div class="flex items-center justify-between">
-                    <h4 class="text-sm font-medium text-gray-900">{{ notification.title }}</h4>
-                    <span class="text-xs text-gray-500">{{ notification.publish_time|date:'Y-m-d H:i' }}</span>
-                  </div>
-                  <p class="text-xs text-gray-600 mt-1 line-clamp-2">{{ notification.content|truncatechars:100 }}</p>
-                  <div class="flex items-center justify-between mt-2">
-                    <span class="px-2 py-0.5 
-                      {% if notification.notification_type == 1 %}bg-red-500 text-white{% elif notification.notification_type == 2 %}bg-green-500 text-white{% elif notification.notification_type == 3 %}bg-blue-500 text-white{% endif %} 
-                      text-xs font-medium rounded-full shadow-sm">
-                      {% if notification.notification_type == 1 %}紧急{% elif notification.notification_type == 2 %}普通{% elif notification.notification_type == 3 %}活动{% endif %}
-                    </span>
-                    <div class="flex items-center text-xs">
-                      <span class="mr-3 text-gray-500"><i class="fa fa-eye mr-1"></i> {{ notification.view_count }}</span>
-                      {% if notification.view_count > 0 %}
-                      <span class="text-green-600"><i class="fa fa-check-circle mr-1"></i> 已读</span>
-                      {% else %}
-                      <span class="text-red-600"><i class="fa fa-times-circle mr-1"></i> 未读</span>
-                      {% endif %}
-                    </div>
+                <p class="text-xs text-gray-600 mt-1 line-clamp-2">{{ notification.content|truncatechars:100 }}</p>
+                <div class="flex items-center justify-between mt-2">
+                  <span class="px-2 py-0.5 
+                    {% if notification.notification_type == 1 %}bg-red-500 text-white{% elif notification.notification_type == 2 %}bg-green-500 text-white{% elif notification.notification_type == 3 %}bg-blue-500 text-white{% endif %} 
+                    text-xs font-medium rounded-full shadow-sm">
+                    {% if notification.notification_type == 1 %}紧急{% elif notification.notification_type == 2 %}普通{% elif notification.notification_type == 3 %}活动{% endif %}
+                  </span>
+                  <div class="flex items-center text-xs">
+                    <span class="mr-3 text-gray-500"><i class="fa fa-eye mr-1"></i> {{ notification.view_count }}</span>
+                    {% if notification.view_count > 0 %}
+                    <span class="text-green-600"><i class="fa fa-check-circle mr-1"></i> 已读</span>
+                    {% else %}
+                    <span class="text-red-600"><i class="fa fa-times-circle mr-1"></i> 未读</span>
+                    {% endif %}
                   </div>
                 </div>
               </div>
             </div>
-            {% endfor %}
-            {% if not notifications %}
-            <div class="text-center py-8 text-gray-500">
-              <i class="fa fa-inbox text-4xl mb-2"></i>
-              <p>暂无通知</p>
-            </div>
-            {% endif %}
           </div>
-          
-          <!-- 分页控件 -->
-          <div class="pagination mt-6">
-            <div class="flex items-center justify-between">
-              <p class="text-sm text-gray-500">共 {{ total_notifications }} 条记录，第 {{ page_number }}/{{ total_pages }} 页</p>
-              <div class="flex items-center space-x-1">
-                {% if page_obj.has_previous %}
-                <a href="#" onclick="refreshNotifications({{ page_obj.previous_page_number }}); return false;" 
-                   class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                  <i class="fa fa-chevron-left"></i>
-                </a>
-                {% else %}
-                <span class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-400 cursor-not-allowed">
-                  <i class="fa fa-chevron-left"></i>
-                </span>
-                {% endif %}
-                
-                <!-- 页码范围 -->
-                {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                <span class="px-3 py-1 border border-primary bg-primary text-white rounded-md text-sm">
-                  {{ num }}
-                </span>
-                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="#" onclick="refreshNotifications({{ num }}); return false;" 
-                   class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                  {{ num }}
-                </a>
-                {% endif %}
-                {% endfor %}
-                
-                {% if page_obj.has_next %}
-                <a href="#" onclick="refreshNotifications({{ page_obj.next_page_number }}); return false;" 
-                   class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                  <i class="fa fa-chevron-right"></i>
-                </a>
-                {% else %}
-                <span class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-400 cursor-not-allowed">
-                  <i class="fa fa-chevron-right"></i>
-                </span>
-                {% endif %}
-              </div>
-              <div class="flex items-center">
-                <label for="page_size" class="text-sm text-gray-500 mr-2">每页：</label>
-                <select id="page_size" onchange="changePageSize()" class="px-2 py-1 border border-gray-300 rounded-md text-sm">
-                  <option value="5" {% if page_size == '5' %}selected{% endif %}>5</option>
-                  <option value="10" {% if page_size == '10' %}selected{% endif %}>10</option>
-                  <option value="20" {% if page_size == '20' %}selected{% endif %}>20</option>
-                  <option value="50" {% if page_size == '50' %}selected{% endif %}>50</option>
-                </select>
-              </div>
+          {% endfor %}
+          {% if not notifications %}
+          <div class="text-center py-8 text-gray-500">
+            <i class="fa fa-inbox text-4xl mb-2"></i>
+            <p>暂无通知</p>
+          </div>
+          {% endif %}
+        </div>
+        
+        <!-- 分页控件 -->
+        <div class="pagination mt-6">
+          <div class="flex items-center justify-between">
+            <p class="text-sm text-gray-500">共 {{ total_notifications }} 条记录，第 {{ page_number }}/{{ total_pages }} 页</p>
+            <div class="flex items-center space-x-1">
+              {% if page_obj.has_previous %}
+              <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}{% if search_query %}&search_query={{ search_query }}{% endif %}{% if selected_notification_type %}&notification_type={{ selected_notification_type }}{% endif %}{% if selected_is_expired %}&is_expired={{ selected_is_expired }}{% endif %}" 
+                 class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                <i class="fa fa-chevron-left"></i>
+              </a>
+              {% else %}
+              <span class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-400 cursor-not-allowed">
+                <i class="fa fa-chevron-left"></i>
+              </span>
+              {% endif %}
+              
+              <!-- 页码范围 -->
+              {% for num in page_obj.paginator.page_range %}
+              {% if page_obj.number == num %}
+              <span class="px-3 py-1 border border-primary bg-primary text-white rounded-md text-sm">
+                {{ num }}
+              </span>
+              {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <a href="?page={{ num }}&page_size={{ page_size }}{% if search_query %}&search_query={{ search_query }}{% endif %}{% if selected_notification_type %}&notification_type={{ selected_notification_type }}{% endif %}{% if selected_is_expired %}&is_expired={{ selected_is_expired }}{% endif %}" 
+                 class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                {{ num }}
+              </a>
+              {% endif %}
+              {% endfor %}
+              
+              {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}{% if search_query %}&search_query={{ search_query }}{% endif %}{% if selected_notification_type %}&notification_type={{ selected_notification_type }}{% endif %}{% if selected_is_expired %}&is_expired={{ selected_is_expired }}{% endif %}" 
+                 class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+                <i class="fa fa-chevron-right"></i>
+              </a>
+              {% else %}
+              <span class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-400 cursor-not-allowed">
+                <i class="fa fa-chevron-right"></i>
+              </span>
+              {% endif %}
+            </div>
+            <div class="flex items-center">
+              <label for="page_size" class="text-sm text-gray-500 mr-2">每页：</label>
+              <select id="page_size" onchange="changePageSize()" class="px-2 py-1 border border-gray-300 rounded-md text-sm">
+                <option value="5" {% if page_size == '5' %}selected{% endif %}>5</option>
+                <option value="10" {% if page_size == '10' %}selected{% endif %}>10</option>
+                <option value="20" {% if page_size == '20' %}selected{% endif %}>20</option>
+                <option value="50" {% if page_size == '50' %}selected{% endif %}>50</option>
+              </select>
             </div>
           </div>
-          
-          <script>
-            function changePageSize() {
-              const pageSize = document.getElementById('page_size').value;
-              refreshNotifications(1, { page_size: pageSize });
-            }
-            
-            function refreshNotifications(page = 1, additionalParams = {}) {
-              // 获取当前URL参数
-              const currentUrl = new URL(window.location.href);
-              const searchParams = new URLSearchParams(currentUrl.search);
-              
-              // 添加分页参数
-              searchParams.set('page', page);
-              
-              // 添加额外参数
-              for (const [key, value] of Object.entries(additionalParams)) {
-                searchParams.set(key, value);
-              }
-              
-              // 发送AJAX请求
-              fetch(window.location.pathname + '?' + searchParams, {
-                method: 'GET',
-                headers: {
-                  'X-Requested-With': 'XMLHttpRequest'
-                }
-              })
-              .then(response => {
-                if (!response.ok) {
-                  throw new Error('Network response was not ok');
-                }
-                return response.text();
-              })
-              .then(html => {
-                // 创建临时DOM元素来解析HTML
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = html;
-                
-                // 更新通知列表容器
-                const newContainer = tempDiv.querySelector('#notifications-container');
-                if (newContainer) {
-                  const currentContainer = document.getElementById('notifications-container');
-                  currentContainer.innerHTML = newContainer.innerHTML;
-                }
-              })
-              .catch(error => {
-                console.error('刷新通知列表失败:', error);
-                // 失败时回退到页面重载
-                window.location.href = window.location.pathname + '?' + searchParams;
-              });
-            }
-            
-            // 页面加载时初始化
-            document.addEventListener('DOMContentLoaded', function() {
-              // 获取搜索输入框
-              const searchInput = document.querySelector('.relative input[type="text"]');
-              if (searchInput) {
-                searchInput.addEventListener('keypress', function(e) {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    // 获取搜索内容
-                    const searchQuery = this.value;
-                    refreshNotifications(1, { search_query: searchQuery });
-                  }
-                });
-              }
-              
-              // 获取类型筛选按钮
-              const typeButtons = document.querySelectorAll('.flex.flex-wrap.items-center.gap-2.flex-1.min-w-0 button');
-              typeButtons.forEach(button => {
-                button.addEventListener('click', function(e) {
-                  // 获取筛选类型
-                  let notificationType = '';
-                  if (this.textContent === '紧急') {
-                    notificationType = '1';
-                  } else if (this.textContent === '普通') {
-                    notificationType = '2';
-                  } else if (this.textContent === '活动') {
-                    notificationType = '3';
-                  } else if (this.textContent === '全部') {
-                    notificationType = '';
-                  }
-                  refreshNotifications(1, { notification_type: notificationType });
-                });
-              });
-            });
-          </script>
+        </div>
+        
+        <script>
+          function changePageSize() {
+            const pageSize = document.getElementById('page_size').value;
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('page', '1');
+            currentUrl.searchParams.set('page_size', pageSize);
+            window.location.href = currentUrl.href;
+          }
+        </script>
       </div>
-    </div>
     </div>
 
     <!-- 右侧：通知详情 -->
@@ -465,6 +386,7 @@
 
       </div>
     </div>
+  </div>
 </section>
 {% endblock %}
 

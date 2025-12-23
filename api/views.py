@@ -8,7 +8,7 @@ from django.views.decorators.http import require_http_methods
 from .models import (Community, SocialWorker, HousingEstate, Building, Unit,
                      Apartment, Hutong, SingleHouse, ResidentialAddress,
                      UserProfile, Resident, Family, Notification,
-                     NotificationRead, NotificationAttachment, Cadre)
+                     NotificationRead, NotificationAttachment)
 from .serializers import (
     CommunitySerializer, SocialWorkerSerializer, HousingEstateSerializer,
     BuildingSerializer, UnitSerializer, ApartmentSerializer, HutongSerializer,
@@ -155,326 +155,83 @@ class NotificationAttachmentViewSet(viewsets.ReadOnlyModelViewSet):
 
 @login_required
 def test_view(request):
-    """Test view to render the test template with comprehensive data"""
-    import requests
-    import json
-    from pypinyin import lazy_pinyin
-    from django.core.cache import cache
+    """Test view to render the test template with notification data"""
     from django.core.paginator import Paginator
-    from django.db.models import Q, Count, Sum
-    from django.utils import timezone
-    from datetime import timedelta
+    from django.db.models import Q
 
-    # 1. 社区人口与家庭数据展示功能
-    def get_community_data():
-        # 尝试从缓存获取数据，缓存过期时间为1小时
-        cache_key = f'community_data_{request.user.id}'
-        cached_data = cache.get(cache_key)
-
-        if cached_data:
-            return cached_data
-
-        community_data = {
-            'total_population': '-',
-            'total_families': '-',
-            'data_source': ''
-        }
-
-        # 获取用户的department属性
-        user_profile = request.user.userprofile
-        department = user_profile.get_department_display()
-
-        if department == '社区办':
-            # 显示所有社区的总人口数和总家庭数
-            total_population = Resident.objects.count()
-            total_families = Family.objects.count()
-
-            community_data = {
-                'total_population': total_population,
-                'total_families': total_families,
-                'data_source': '系统数据库'
-            }
-        elif department == '社区':
-            # 根据用户关联的社区工作者所属社区查询
-            try:
-                # 查找用户关联的社区工作者
-                social_worker = SocialWorker.objects.get(
-                    user_profile=user_profile)
-                community = social_worker.community
-
-                # 查询该社区的总人口数和总家庭数
-                # 假设Resident通过family关联到Family，Family通过residential_address关联到社区
-                total_population = Resident.objects.filter(
-                    family__residential_address__estate__community=community
-                ).count()
-                total_families = Family.objects.filter(
-                    residential_address__estate__community=community).count()
-
-                community_data = {
-                    'total_population': total_population,
-                    'total_families': total_families,
-                    'data_source': f'{community.name}社区数据库'
-                }
-            except SocialWorker.DoesNotExist:
-                pass
-
-        # 缓存数据，过期时间1小时
-        cache.set(cache_key, community_data, 3600)
-        return community_data
-
-    # 2. 用户未读通知计数功能
-    def get_unread_notifications_count():
-        # 尝试从缓存获取数据，缓存过期时间为5分钟
-        cache_key = f'unread_notifications_{request.user.id}'
-        cached_count = cache.get(cache_key)
-
-        if cached_count is not None:
-            return cached_count
-
-        # 获取当前用户的通知总数
-        total_notifications = Notification.objects.count()
-
-        # 获取当前用户的已读通知数量
-        read_notifications = NotificationRead.objects.filter(
-            user=request.user).count()
-
-        # 计算未读通知数量
-        unread_count = total_notifications - read_notifications
-
-        # 缓存数据，过期时间5分钟
-        cache.set(cache_key, unread_count, 300)
-        return unread_count
-
-    # 3. 天气预报集成功能
-    def get_weather_data():
-        # 尝试从缓存获取数据，缓存过期时间为3小时
-        cache_key = 'weather_data'
-        cached_data = cache.get(cache_key)
-
-        if cached_data:
-            return cached_data
-
-        weather_data = {'today': {}, 'forecast': []}
-
-        try:
-            # 这里使用和风天气API作为示例，实际使用时需要替换为真实的API
-            # API Key需要从和风天气官网注册获取
-            api_key = 'YOUR_WEATHER_API_KEY'
-            city_code = '101010100'  # 北京的城市代码
-            weather_url = f'https://devapi.qweather.com/v7/weather/now?location={city_code}&key={api_key}'
-            forecast_url = f'https://devapi.qweather.com/v7/weather/7d?location={city_code}&key={api_key}'
-
-            # 获取今日天气
-            now_response = requests.get(weather_url, timeout=5)
-            now_data = now_response.json()
-
-            if now_data.get('code') == '200':
-                weather_data['today'] = {
-                    'temp': now_data['now']['temp'],
-                    'text': now_data['now']['text'],
-                    'humidity': now_data['now']['humidity'],
-                    'windSpeed': now_data['now']['windSpeed'],
-                    'windDir': now_data['now']['windDir']
-                }
-
-            # 获取未来一周天气预报
-            forecast_response = requests.get(forecast_url, timeout=5)
-            forecast_data = forecast_response.json()
-
-            if forecast_data.get('code') == '200':
-                weather_data['forecast'] = []
-                for day in forecast_data['daily'][:7]:
-                    weather_data['forecast'].append({
-                        'date':
-                        day['fxDate'],
-                        'maxTemp':
-                        day['tempMax'],
-                        'minTemp':
-                        day['tempMin'],
-                        'textDay':
-                        day['textDay'],
-                        'textNight':
-                        day['textNight']
-                    })
-        except Exception as e:
-            # 记录错误日志
-            import logging
-            logger = logging.getLogger(__name__)
-            logger.error(f'获取天气数据失败: {str(e)}')
-
-        # 缓存数据，过期时间3小时
-        cache.set(cache_key, weather_data, 10800)
-        return weather_data
-
-    # 4. 通讯录管理功能
-    def get_contacts_data(search_query=None,
-                          page=1,
-                          page_size=20,
-                          sort_field='name',
-                          sort_order='asc'):
-        # 查询所有未离职的社区工作者和干部
-        base_query = Q(is_baned=True)
-
-        if search_query:
-            # 同时搜索姓名和联系电话
-            search_query = Q(name__icontains=search_query) | Q(
-                phone__icontains=search_query)
-            social_worker_query = base_query & search_query
-            cadre_query = base_query & search_query
-        else:
-            social_worker_query = base_query
-            cadre_query = base_query
-
-        # 查询社区工作者，预取社区信息
-        social_workers = SocialWorker.objects.filter(
-            social_worker_query).select_related('community').order_by('name')
-
-        # 查询干部
-        cadres = Cadre.objects.filter(cadre_query).order_by('name')
-
-        # 合并结果
-        all_contacts = list(social_workers) + list(cadres)
-
-        # 定义排序函数，使用拼音排序
-        def get_sort_key(contact):
-            if sort_field == 'name':
-                # 按姓名拼音排序
-                return ''.join(lazy_pinyin(contact.name))
-            elif sort_field == 'department':
-                if isinstance(contact, SocialWorker):
-                    # 按部门拼音排序
-                    department_name = contact.community.name if contact.community else ''
-                    return ''.join(lazy_pinyin(department_name))
-                else:
-                    return ''.join(lazy_pinyin('社区办'))
-            elif sort_field == 'phone':
-                return contact.phone or ''
-            elif sort_field == 'type':
-                if isinstance(contact, SocialWorker):
-                    return ''.join(lazy_pinyin('社工'))
-                else:
-                    # 按职务拼音排序
-                    position = contact.position if contact.position else '无职务'
-                    return ''.join(lazy_pinyin(position))
-            else:
-                return ''.join(lazy_pinyin(contact.name))
-
-        # 执行排序
-        reverse = True if sort_order == 'desc' else False
-        all_contacts.sort(key=get_sort_key, reverse=reverse)
-
-        # 分页
-        paginator = Paginator(all_contacts, page_size)
-        page_obj = paginator.get_page(page)
-
-        # 格式化数据
-        formatted_contacts = []
-        for contact in page_obj.object_list:
-            if isinstance(contact, SocialWorker):
-                department = contact.community.name if contact.community else '未分配社区'
-                position = '社工'
-            else:  # Cadre
-                department = '社区办'
-                position = contact.position if contact.position else '无职务'
-
-            formatted_contacts.append({
-                'id': contact.id,
-                'name': contact.name,
-                'department': department,
-                'phone': contact.phone,
-                'type': position
-            })
-
-        return {
-            'contacts': formatted_contacts,
-            'page_obj': page_obj,
-            'total_pages': paginator.num_pages,
-            'total_contacts': paginator.count,
-            'current_page': page_obj.number
-        }
-
-    # 5. 社区列表展示功能
-    def get_community_list(page=1, page_size=10):
-        # 查询所有社区
-        communities = Community.objects.all().order_by('name')
-
-        # 分页
-        paginator = Paginator(communities, page_size)
-        page_obj = paginator.get_page(page)
-
-        # 格式化数据
-        formatted_communities = []
-        for community in page_obj.object_list:
-            formatted_communities.append({
-                'id':
-                community.id,
-                'name':
-                community.name,
-                'address':
-                community.office_address or '',
-                'phone':
-                community.office_phone or ''
-            })
-
-        return {
-            'communities': formatted_communities,
-            'page_obj': page_obj,
-            'total_pages': paginator.num_pages,
-            'total_communities': paginator.count,
-            'current_page': page_obj.number
-        }
-
-    # 获取请求参数
-    page = request.GET.get('page', 1)
+    # 获取前端传来的分页参数，默认为第1页，每页10条
+    page_number = request.GET.get('page', 1)
     page_size = request.GET.get('page_size', 10)
-    search_query = request.GET.get('search_query')
-    sort_field = request.GET.get('sort_field', 'name')
-    sort_order = request.GET.get('sort_order', 'asc')
 
-    # 获取各功能数据
-    community_data = get_community_data()
-    unread_count = get_unread_notifications_count()
-    weather_data = get_weather_data()
-    contacts_data = get_contacts_data(search_query, page, page_size,
-                                      sort_field, sort_order)
-    community_list_data = get_community_list(page, page_size)
+    # 获取筛选参数
+    search_query = request.GET.get('search_query')
+    notification_type = request.GET.get('notification_type')
+    is_expired = request.GET.get('is_expired')
+
+    # 构建查询条件
+    query = Q()
+
+    # 根据搜索关键词筛选
+    if search_query:
+        query &= Q(
+            Q(title__icontains=search_query)
+            | Q(content__icontains=search_query)
+            | Q(publisher__username__icontains=search_query))
+
+    # 根据通知类型筛选
+    if notification_type:
+        query &= Q(notification_type=notification_type)
+
+    # 根据是否过期筛选
+    if is_expired:
+        from django.utils import timezone
+        now = timezone.now()
+        if is_expired == '1':
+            query &= Q(valid_until__lt=now)
+        elif is_expired == '0':
+            query &= Q(valid_until__gte=now)
+
+    # 获取过滤后的通知数据
+    notifications_list = list(Notification.objects.filter(query))
 
     # 准备上下文数据
+    # 获取当前用户的已读通知ID列表
+    user_read_notifications = set()
+    if request.user.is_authenticated:
+        from api.models import NotificationRead
+        user_read_notifications = set(
+            NotificationRead.objects.filter(user=request.user).values_list(
+                'notification_id', flat=True))
+
+    # 自定义排序：先按未读/已读分组，再按发布时间倒序
+    def custom_sort(notification):
+        # 第一优先级：未读状态（未读排在前面）
+        # 第二优先级：发布时间（最新的排在前面）
+        is_read = notification.id in user_read_notifications
+        return (is_read, -notification.publish_time.timestamp())
+
+    # 应用自定义排序
+    notifications_list.sort(key=custom_sort)
+
+    # 创建分页器实例
+    paginator = Paginator(notifications_list, page_size)
+
+    # 获取指定页码的数据
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        # 用户信息
+        'page_obj': page_obj,
+        'notifications': page_obj.object_list,
         'user': request.user,
         'is_authenticated': request.user.is_authenticated,
-        'user_profile': request.user.userprofile,
-
-        # 1. 社区人口与家庭数据
-        'community_data': community_data,
-
-        # 2. 未读通知计数
-        'unread_notifications_count': unread_count,
-
-        # 3. 天气预报数据
-        'weather_data': weather_data,
-
-        # 4. 通讯录管理
-        'contacts': contacts_data['contacts'],
-        'contacts_page_obj': contacts_data['page_obj'],
-        'total_contacts': contacts_data['total_contacts'],
-        'contacts_total_pages': contacts_data['total_pages'],
-        'current_contacts_page': contacts_data['current_page'],
-
-        # 5. 社区列表
-        'communities': community_list_data['communities'],
-        'communities_page_obj': community_list_data['page_obj'],
-        'total_communities': community_list_data['total_communities'],
-        'communities_total_pages': community_list_data['total_pages'],
-        'current_communities_page': community_list_data['current_page'],
-
-        # 搜索参数
+        'page_number': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'total_notifications': paginator.count,
+        'page_size': page_size,
         'search_query': search_query,
-
-        # 排序参数
-        'sort_field': sort_field,
-        'sort_order': sort_order,
+        'selected_notification_type': notification_type,
+        'selected_is_expired': is_expired,
+        'user_read_notifications': user_read_notifications
     }
 
     return render(request, 'test.html', context)
@@ -813,240 +570,7 @@ def index(request):
 @login_required
 def dashboard(request):
     """Dashboard view"""
-    import requests
-    import json
-    from pypinyin import lazy_pinyin
-    from django.core.cache import cache
-    from django.core.paginator import Paginator
-    from django.db.models import Q, Count, Sum
-    from django.utils import timezone
-    from datetime import timedelta
-
-    # 社区人口与家庭数据展示功能
-    def get_community_data():
-        # 每次刷新页面都重新计算数据，不使用缓存
-        community_data = {
-            'total_population': '-',
-            'total_families': '-',
-            'data_source': ''
-        }
-
-        # 获取用户的department属性
-        user_profile = request.user.userprofile
-        department = user_profile.get_department_display()
-
-        if department == '社区办':
-            # 显示所有社区的总人口数和总家庭数
-            total_population = Resident.objects.count()
-            total_families = Family.objects.count()
-
-            community_data = {
-                'total_population': total_population,
-                'total_families': total_families,
-                'data_source': '系统数据库'
-            }
-        elif department == '社区':
-            # 根据用户关联的社区工作者所属社区查询
-            try:
-                # 查找用户关联的社区工作者
-                social_worker = SocialWorker.objects.get(
-                    user_profile=user_profile)
-                community = social_worker.community
-
-                # 查询该社区的总人口数和总家庭数
-                # 假设Resident通过family关联到Family，Family通过residential_address关联到社区
-                total_population = Resident.objects.filter(
-                    family__residential_address__estate__community=community
-                ).count()
-                total_families = Family.objects.filter(
-                    residential_address__estate__community=community).count()
-
-                community_data = {
-                    'total_population': total_population,
-                    'total_families': total_families,
-                    'data_source': f'{community.name}社区数据库'
-                }
-            except SocialWorker.DoesNotExist:
-                pass
-
-        return community_data
-
-    # 通讯录管理功能
-    def get_contacts_data(search_query=None,
-                          page=1,
-                          page_size=20,
-                          sort_field='name',
-                          sort_order='asc'):
-        # 查询所有未离职的社区工作者和干部
-        social_worker_query = Q(is_baned=True)
-        cadre_query = Q(is_baned=True)
-
-        if search_query:
-            social_worker_query &= (Q(name__icontains=search_query)
-                                    | Q(phone__icontains=search_query))
-            cadre_query &= (Q(name__icontains=search_query)
-                            | Q(phone__icontains=search_query))
-
-        # 查询社区工作者，预取社区信息
-        social_workers = SocialWorker.objects.filter(
-            social_worker_query).select_related('community').order_by('name')
-
-        # 查询干部
-        cadres = Cadre.objects.filter(cadre_query).order_by('name')
-
-        # 合并结果
-        all_contacts = list(social_workers) + list(cadres)
-
-        # 定义排序函数
-        def get_sort_key(contact):
-            if sort_field == 'name':
-                # 按姓名拼音排序
-                return ''.join(lazy_pinyin(contact.name))
-            elif sort_field == 'department':
-                if isinstance(contact, SocialWorker):
-                    # 按部门拼音排序
-                    department_name = contact.community.name if contact.community else ''
-                    return ''.join(lazy_pinyin(department_name))
-                else:
-                    return ''.join(lazy_pinyin('社区办'))
-            elif sort_field == 'phone':
-                return contact.phone or ''
-            elif sort_field == 'type':
-                if isinstance(contact, SocialWorker):
-                    return ''.join(lazy_pinyin('社工'))
-                else:
-                    # 按职务拼音排序
-                    position = contact.position if contact.position else '无职务'
-                    return ''.join(lazy_pinyin(position))
-            else:
-                return ''.join(lazy_pinyin(contact.name))
-
-        # 执行排序
-        reverse = True if sort_order == 'desc' else False
-        all_contacts.sort(key=get_sort_key, reverse=reverse)
-
-        # 分页
-        paginator = Paginator(all_contacts, page_size)
-        page_obj = paginator.get_page(page)
-
-        # 格式化数据
-        formatted_contacts = []
-        for contact in page_obj.object_list:
-            if isinstance(contact, SocialWorker):
-                department = contact.community.name if contact.community else '未分配社区'
-                position = '社工'
-            else:
-                department = '社区办'
-                position = contact.position if contact.position else '无职务'
-
-            formatted_contacts.append({
-                'id': contact.id,
-                'name': contact.name,
-                'department': department,
-                'phone': contact.phone,
-                'type': position
-            })
-
-        return {
-            'contacts': formatted_contacts,
-            'page_obj': page_obj,
-            'total_pages': paginator.num_pages,
-            'total_contacts': paginator.count,
-            'current_page': page_obj.number
-        }
-
-    # 用户未读通知计数功能
-    def get_unread_notifications_count():
-        # 每次刷新页面都重新计算未读通知数量，不使用缓存
-        # 获取当前用户的通知总数
-        total_notifications = Notification.objects.count()
-
-        # 获取当前用户的已读通知数量
-        read_notifications = NotificationRead.objects.filter(
-            user=request.user).count()
-
-        # 计算未读通知数量
-        unread_count = total_notifications - read_notifications
-
-        return unread_count
-
-    # 社区列表展示功能
-    def get_community_list(page=1, page_size=10):
-        # 查询所有社区
-        communities = Community.objects.all().order_by('name')
-
-        # 分页
-        paginator = Paginator(communities, page_size)
-        page_obj = paginator.get_page(page)
-
-        # 格式化数据
-        formatted_communities = []
-        for community in page_obj.object_list:
-            formatted_communities.append({
-                'id':
-                community.id,
-                'name':
-                community.name,
-                'address':
-                community.office_address or '',
-                'phone':
-                community.office_phone or ''
-            })
-
-        return {
-            'communities': formatted_communities,
-            'page_obj': page_obj,
-            'total_pages': paginator.num_pages,
-            'total_communities': paginator.count,
-            'current_page': page_obj.number
-        }
-
-    # 获取请求参数
-    contacts_page = request.GET.get('contacts_page', 1)
-    communities_page = request.GET.get('communities_page', 1)
-    page_size = request.GET.get('page_size', 10)
-    search_query = request.GET.get('search_query')
-    sort_field = request.GET.get('sort_field', 'name')
-    sort_order = request.GET.get('sort_order', 'asc')
-
-    # 获取各功能数据
-    community_data = get_community_data()
-    unread_notifications_count = get_unread_notifications_count()
-    contacts_data = get_contacts_data(search_query, contacts_page, page_size,
-                                      sort_field, sort_order)
-    community_list_data = get_community_list(communities_page, page_size)
-
-    # 准备上下文数据
-    context = {
-        # 社区人口与家庭数据
-        'community_data': community_data,
-
-        # 用户未读通知数量
-        'unread_notifications_count': unread_notifications_count,
-
-        # 通讯录管理
-        'contacts': contacts_data['contacts'],
-        'contacts_page_obj': contacts_data['page_obj'],
-        'total_contacts': contacts_data['total_contacts'],
-        'contacts_total_pages': contacts_data['total_pages'],
-        'current_contacts_page': contacts_data['current_page'],
-
-        # 社区列表
-        'communities': community_list_data['communities'],
-        'communities_page_obj': community_list_data['page_obj'],
-        'total_communities': community_list_data['total_communities'],
-        'communities_total_pages': community_list_data['total_pages'],
-        'current_communities_page': community_list_data['current_page'],
-
-        # 搜索参数
-        'search_query': search_query,
-
-        # 排序参数
-        'sort_field': sort_field,
-        'sort_order': sort_order,
-    }
-
-    return render(request, 'dashboard.html', context)
+    return render(request, 'dashboard.html')
 
 
 @login_required
@@ -1074,11 +598,8 @@ def residents_view(request):
 
     # 政治面貌筛选
     if political_status:
-        try:
-            political_status = int(political_status)
-            residents_list = residents_list.filter(political_status=political_status)
-        except ValueError:
-            pass
+        residents_list = residents_list.filter(
+            political_status=political_status)
 
     # 年龄段筛选
     if age_group:
@@ -1133,19 +654,11 @@ def residents_view(request):
             residents_list = residents_list.exclude(
                 nationality__in=[1, 2, 3, 4])
         else:
-            try:
-                nationality = int(nationality)
-                residents_list = residents_list.filter(nationality=nationality)
-            except ValueError:
-                pass
+            residents_list = residents_list.filter(nationality=nationality)
 
     # 学历筛选
     if education:
-        try:
-            education = int(education)
-            residents_list = residents_list.filter(education=education)
-        except ValueError:
-            pass
+        residents_list = residents_list.filter(education=education)
 
     # 搜索功能：支持姓名、身份证号、手机号搜索
     if search_query:

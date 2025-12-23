@@ -80,99 +80,102 @@
     </form>
 
     <!-- 家庭列表 -->
-    <div id="families-container">
-      <div class="overflow-x-auto">
-        <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
-          <thead>
-            <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              <th class="px-6 py-3 border-b border-gray-200">户号</th>
-              <th class="px-6 py-3 border-b border-gray-200">房主姓名</th>
-              <th class="px-6 py-3 border-b border-gray-200">居住地址</th>
-              <th class="px-6 py-3 border-b border-gray-200">联系电话</th>
-              <th class="px-6 py-3 border-b border-gray-200">更新时间</th>
-              <th class="px-6 py-3 border-b border-gray-200">备注</th>
-              <th class="px-6 py-3 border-b border-gray-200">操作</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            {% for family in families %}
-            <tr class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ family.household_number }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ family.owner_name }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.residential_address|default:"-" }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.contact_phone|default:"-" }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.updated_at|date:"Y-m-d H:i:s" }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.remark|default:"-" }}</td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <a href="/residents/?family_id={{ family.id }}" class="text-primary hover:text-blue-700 mr-3">查看居民</a>
-                <a href="/edit-family/{{ family.id }}/" class="text-gray-600 hover:text-gray-900 mr-3">编辑</a>
-              </td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td colspan="7" class="px-6 py-10 text-center text-gray-500">
-                <div class="flex flex-col items-center justify-center">
-                  <i class="fa fa-users text-4xl mb-4"></i>
-                  <h3 class="text-lg font-medium mb-2">未找到符合条件的家庭数据</h3>
-                  <p class="text-sm">请尝试调整筛选条件</p>
-                </div>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border border-gray-200 rounded-lg shadow-sm">
+        <thead>
+          <tr class="bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            <th class="px-6 py-3 border-b border-gray-200">户号</th>
+            <th class="px-6 py-3 border-b border-gray-200">房主姓名</th>
+            <th class="px-6 py-3 border-b border-gray-200">居住地址</th>
+            <th class="px-6 py-3 border-b border-gray-200">联系电话</th>
+            <th class="px-6 py-3 border-b border-gray-200">更新时间</th>
+            <th class="px-6 py-3 border-b border-gray-200">备注</th>
+            <th class="px-6 py-3 border-b border-gray-200">操作</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+          {% for family in families %}
+          <tr class="hover:bg-gray-50 transition-colors">
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ family.household_number }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ family.owner_name }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.residential_address|default:"-" }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.contact_phone|default:"-" }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.updated_at|date:"Y-m-d H:i:s" }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ family.remark|default:"-" }}</td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+              <a href="/residents/?family_id={{ family.id }}" class="text-primary hover:text-blue-700 mr-3">查看居民</a>
+              <a href="/edit-family/{{ family.id }}/" class="text-gray-600 hover:text-gray-900 mr-3">编辑</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+              <div class="flex flex-col items-center justify-center">
+                <i class="fa fa-users text-4xl mb-4"></i>
+                <h3 class="text-lg font-medium mb-2">未找到符合条件的家庭数据</h3>
+                <p class="text-sm">请尝试调整筛选条件</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
 
-      <!-- 分页 -->
-      <div class="flex flex-col sm:flex-row items-center justify-between mt-6">
-        <div class="text-sm text-gray-500 mb-4 sm:mb-0">
-          显示 <span class="font-medium">{{ page_obj.start_index }}</span> 到 <span class="font-medium">{{ page_obj.end_index }}</span> 条，共 <span class="font-medium">{{ total_families }}</span> 条记录
+
+
+    <!-- 分页 -->
+    <div class="flex flex-col sm:flex-row items-center justify-between mt-6">
+      <div class="text-sm text-gray-500 mb-4 sm:mb-0">
+        显示 <span class="font-medium">{{ page_obj.start_index }}</span> 到 <span class="font-medium">{{ page_obj.end_index }}</span> 条，共 <span class="font-medium">{{ total_families }}</span> 条记录
+      </div>
+      <div class="flex items-center space-x-2">
+        <!-- 每页显示条数选择 -->
+        <div class="mr-4 flex items-center">
+          <span class="text-sm text-gray-500 mr-2">每页显示：</span>
+          <select id="page_size" onchange="changePageSize()"
+            class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="5" {% if page_size == '5' %}selected{% endif %}>5</option>
+            <option value="10" {% if page_size == '10' %}selected{% endif %}>10</option>
+            <option value="20" {% if page_size == '20' %}selected{% endif %}>20</option>
+            <option value="50" {% if page_size == '50' %}selected{% endif %}>50</option>
+          </select>
         </div>
-        <div class="flex items-center space-x-2">
-          <!-- 每页显示条数选择 -->
-          <div class="mr-4 flex items-center">
-            <span class="text-sm text-gray-500 mr-2">每页显示：</span>
-            <select id="page_size" onchange="refreshFamilies({ page_size: this.value, page: 1 })"
-              class="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-              <option value="5" {% if page_size == '5' %}selected{% endif %}>5</option>
-              <option value="10" {% if page_size == '10' %}selected{% endif %}>10</option>
-              <option value="20" {% if page_size == '20' %}selected{% endif %}>20</option>
-              <option value="50" {% if page_size == '50' %}selected{% endif %}>50</option>
-            </select>
-          </div>
+        
+        <!-- 页码导航 -->
+        <div class="flex items-center space-x-1">
+          {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}&page_size={{ page_size }}{% if selected_community %}&community={{ selected_community }}{% endif %}{% if selected_estate %}&estate={{ selected_estate }}{% endif %}{% if selected_hutong %}&hutong={{ selected_hutong }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
+            class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+            上一页
+          </a>
+          {% else %}
+          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+            disabled>
+            上一页
+          </button>
+          {% endif %}
           
-          <!-- 页码导航 -->
-          <div class="flex items-center space-x-1">
-            {% if page_obj.has_previous %}
-            <button onclick="refreshFamilies({ page: {{ page_obj.previous_page_number }} })" class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-              上一页
-            </button>
-            {% else %}
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-              disabled>
-              上一页
-            </button>
-            {% endif %}
-            
-            {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-            <button class="px-3 py-1 border border-primary bg-primary text-white rounded-md text-sm hover:bg-blue-700">{{ num }}</button>
-            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-            <button onclick="refreshFamilies({ page: {{ num }} })" class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">{{ num }}</button>
-            {% endif %}
-            {% endfor %}
-            
-            {% if page_obj.has_next %}
-            <button onclick="refreshFamilies({ page: {{ page_obj.next_page_number }} })" class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-              下一页
-            </button>
-            {% else %}
-            <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-              disabled>
-              下一页
-            </button>
-            {% endif %}
-          </div>
+          {% for num in page_obj.paginator.page_range %}
+          {% if page_obj.number == num %}
+          <button class="px-3 py-1 border border-primary bg-primary text-white rounded-md text-sm hover:bg-blue-700">{{ num }}</button>
+          {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <a href="?page={{ num }}&page_size={{ page_size }}{% if selected_community %}&community={{ selected_community }}{% endif %}{% if selected_estate %}&estate={{ selected_estate }}{% endif %}{% if selected_hutong %}&hutong={{ selected_hutong }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
+            class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">{{ num }}</a>
+          {% endif %}
+          {% endfor %}
+          
+          {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}&page_size={{ page_size }}{% if selected_community %}&community={{ selected_community }}{% endif %}{% if selected_estate %}&estate={{ selected_estate }}{% endif %}{% if selected_hutong %}&hutong={{ selected_hutong }}{% endif %}{% if search_query %}&search_query={{ search_query }}{% endif %}"
+            class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
+            下一页
+          </a>
+          {% else %}
+          <button class="px-3 py-1 border border-gray-300 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+            disabled>
+            下一页
+          </button>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -188,58 +191,15 @@
     if (communityId) {
       updateEstatesAndHutongs();
     }
-    
-    // 监听表单提交事件，使用AJAX处理
-    const form = document.getElementById('filter-form');
-    if (form) {
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        refreshFamilies({ page: 1 });
-      });
-    }
   });
 
-  // 刷新家庭列表
-  function refreshFamilies(additionalParams = {}) {
-    // 获取当前表单数据
-    const form = document.getElementById('filter-form');
-    const formData = new FormData(form);
-    
-    // 获取当前URL的查询参数
-    const params = new URLSearchParams(window.location.search);
-    const currentParams = {};
-    for (const [key, value] of params.entries()) {
-      currentParams[key] = value;
-    }
-    
-    // 合并参数：URL参数优先，然后是表单数据，最后是额外参数
-    const newParams = { ...currentParams, ...Object.fromEntries(formData), ...additionalParams };
-    
-    // 发送AJAX请求
-    fetch(window.location.pathname + '?' + new URLSearchParams(newParams))
-      .then(response => response.text())
-      .then(html => {
-        // 创建临时容器解析HTML
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = html;
-        
-        // 更新家庭列表
-        const newFamiliesContainer = tempDiv.querySelector('#families-container');
-        if (newFamiliesContainer) {
-          document.getElementById('families-container').innerHTML = newFamiliesContainer.innerHTML;
-        }
-        
-        // 重新初始化小区和胡同选择框，如果有选择的社区
-        const communityId = document.getElementById('community').value;
-        if (communityId) {
-          updateEstatesAndHutongs();
-        }
-      })
-      .catch(error => {
-        console.error('刷新家庭列表失败:', error);
-        // 失败时回退到完整页面刷新
-        window.location.href = window.location.pathname + '?' + new URLSearchParams(newParams);
-      });
+  function changePageSize() {
+    const pageSize = document.getElementById('page_size').value;
+    // 构建当前URL，保持所有筛选条件和搜索条件
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('page', '1'); // 改变每页显示条数时，回到第一页
+    currentUrl.searchParams.set('page_size', pageSize);
+    window.location.href = currentUrl.href;
   }
 
   function updateEstatesAndHutongs() {
@@ -264,12 +224,6 @@
             option.textContent = estate.name;
             estateSelect.appendChild(option);
           });
-          
-          // 如果有selected_estate，选中对应的选项
-          const selectedEstate = '{{ selected_estate|default:'' }}';
-          if (selectedEstate && selectedEstate !== 'None') {
-            estateSelect.value = selectedEstate;
-          }
         })
         .catch(error => {
           console.error('获取小区数据失败:', error);
@@ -286,17 +240,13 @@
             option.textContent = hutong.name;
             hutongSelect.appendChild(option);
           });
-          
-          // 如果有selected_hutong，选中对应的选项
-          const selectedHutong = '{{ selected_hutong|default:'' }}';
-          if (selectedHutong && selectedHutong !== 'None') {
-            hutongSelect.value = selectedHutong;
-          }
         })
         .catch(error => {
           console.error('获取胡同数据失败:', error);
         });
     }
   }
+
+
 </script>
 {% endblock %}
