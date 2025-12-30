@@ -32,8 +32,15 @@
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
     <open-files>
+<<<<<<< HEAD
       <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_family" />
       <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_resident" />
+=======
+      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="consoles/Connection" />
+      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_notificationread" />
+      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_notification" />
+      <object connection-id="566bc267-e15a-41c8-a7ec-f0f5a6a4012c" object-ref="schemas/db/tables/api_notificationattachment" />
+>>>>>>> 06564b836241a6617c0d310d70b2d5548725eefb
     </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
